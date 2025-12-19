@@ -14,8 +14,8 @@ type EmployeeRepository interface {
 	Create(input cli.AddEmployee) (bool, error)
 	GetID(email string) (uuid.UUID, error)
 	GetByEmail(email string) (cli.EmployeeDTO, error)
-	GetAll() ([]cli.Employees, error)
-	Delete(id uuid.UUID) error
+	GetAll() ([]cli.EmployeeDTO, error)
+	Delete(email string) error
 }
 
 type employeeRepo struct {
@@ -126,25 +126,24 @@ func (er *employeeRepo) GetByEmail(email string) (cli.EmployeeDTO, error) {
 	return result, nil
 }
 
-func (er *employeeRepo) GetAll() ([]cli.Employees, error) {
+func (er *employeeRepo) GetAll() ([]cli.EmployeeDTO, error) {
 	rows, err := er.db.Query(getAllEmployees)
 
 	if err != nil {
-		return []cli.Employees{}, err
+		return []cli.EmployeeDTO{}, err
 	}
 
-	var result []cli.Employees
-	var temp cli.Employees
+	var result []cli.EmployeeDTO
+	var temp cli.EmployeeDTO
 	var phone sql.NullString
 
 	for rows.Next() {
 		err := rows.Scan(
-			&temp.Id, &temp.Email, &temp.FullName, &temp.Code,
-			&temp.Gender, &phone, &temp.Dob,
-			&temp.CreatedTime, &temp.CreatedBy)
+			&temp.Email, &temp.FullName, &temp.Code,
+			&temp.Gender, &phone, &temp.Dob)
 
 		if err != nil {
-			return []cli.Employees{}, err
+			return []cli.EmployeeDTO{}, err
 		}
 
 		if phone.Valid {
@@ -157,8 +156,8 @@ func (er *employeeRepo) GetAll() ([]cli.Employees, error) {
 	return result, nil
 }
 
-func (er *employeeRepo) Delete(id uuid.UUID) error {
-	rows, err := er.db.Exec(deleteEmployee, id)
+func (er *employeeRepo) Delete(email string) error {
+	rows, err := er.db.Exec(deleteEmployee, email)
 
 	if err != nil {
 		return err

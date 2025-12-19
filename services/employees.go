@@ -69,21 +69,21 @@ func (es EmployeeService) GetEmployeeByEmail(email string) (cli.EmployeeDTO, err
 	return result, nil
 }
 
-func (es EmployeeService) GetAllEmployees() ([]cli.Employees, error) {
+func (es EmployeeService) GetAllEmployees() ([]cli.EmployeeDTO, error) {
 	result, err := es.repo.GetAll()
 
 	if err != nil {
-		return []cli.Employees{}, err
+		return []cli.EmployeeDTO{}, err
 	}
 
 	return result, nil
 }
 
-func (es *EmployeeService) DeleteEmployee(id uuid.UUID) error {
-	if id == uuid.Nil {
+func (es *EmployeeService) DeleteEmployee(email string) error {
+	if len(email) == 0 {
 		return fmt.Errorf("invalid employee ID: nil")
 	}
-	return es.repo.Delete(id)
+	return es.repo.Delete(email)
 }
 
 func (es *EmployeeService) ExportEmployee(filePath string) error {
@@ -99,15 +99,12 @@ func (es *EmployeeService) ExportEmployee(filePath string) error {
 
 	for _, emp := range employeeList {
 		row := []string{
-			emp.Id.String(),
 			emp.FullName,
 			emp.Email,
 			emp.Code,
 			string(emp.Gender),
 			emp.Phone,
-			emp.Dob.Format("2006-01-02"), // Standardized date format
-			emp.CreatedTime.Format("2006-01-02 15:04:05"),
-			emp.CreatedBy.String(),
+			emp.Dob.Format("2006-01-02"),
 		}
 		format = append(format, row)
 	}

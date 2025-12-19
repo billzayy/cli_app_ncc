@@ -95,24 +95,18 @@ func readAllEmployeesFlow(s *services.EmployeeService) {
 }
 
 func deleteEmployeeFlow(s *services.EmployeeService) error {
-	var idStr string
+	var emailStr string
 
-	fmt.Print("Enter employee ID to delete (UUID): ")
-	fmt.Scan(&idStr)
+	fmt.Print("Enter employee's Email to delete: ")
+	fmt.Scan(&emailStr)
 
-	idStr = strings.TrimSpace(idStr)
+	emailStr = strings.TrimSpace(emailStr)
 
-	if idStr == "" {
-		return fmt.Errorf("ID cannot be empty")
+	if emailStr == "" {
+		return fmt.Errorf("Email cannot be empty")
 	}
 
-	id, err := uuid.Parse(idStr)
-
-	if err != nil {
-		return fmt.Errorf("invalid UUID format: %w", err)
-	}
-
-	return s.DeleteEmployee(id)
+	return s.DeleteEmployee(emailStr)
 }
 
 func importEmployeesFlow(s *services.EmployeeService, importedBy uuid.UUID) {

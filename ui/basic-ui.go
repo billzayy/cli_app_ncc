@@ -28,6 +28,10 @@ func NewApp(db *sql.DB) *App {
 }
 
 func (a *App) Run() error {
+	id, err := a.promptEmployeeID()
+	if err != nil {
+		return fmt.Errorf("failed to identify employee: %w", err)
+	}
 	for {
 		choice := a.ShowMainMenu()
 
@@ -37,26 +41,14 @@ func (a *App) Run() error {
 
 		switch choice {
 		case 1:
-			id, err := a.promptEmployeeID()
-			if err != nil {
-				return fmt.Errorf("failed to identify employee: %w", err)
-			}
 			a.ShowEmployeeMenu(id)
 		case 2:
 			a.ShowAdditionMenu()
 		case 3:
 			a.ShowRoleMenu()
 		case 4:
-			id, err := a.promptEmployeeID()
-			if err != nil {
-				return fmt.Errorf("failed to identify employee: %w", err)
-			}
 			a.ShowProjectMenu(id)
 		case 5:
-			id, err := a.promptEmployeeID()
-			if err != nil {
-				return fmt.Errorf("failed to identify employee: %w", err)
-			}
 			a.ShowSalaryMenu(id)
 		default:
 			a.printUsage()

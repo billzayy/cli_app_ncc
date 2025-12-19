@@ -12,11 +12,11 @@ var createEmployee string = `
 
 var getIdEmployee string = `SELECT id from employees WHERE email = $1`
 
-var getAllEmployees string = `SELECT * FROM employees`
+var getAllEmployees string = `SELECT email, full_name, code, gender, phone, dob FROM employees`
 
 var getEmployeeByEmail string = `SELECT email, full_name, code, gender, phone, dob FROM employees WHERE email = $1`
 
-var deleteEmployee string = `DELETE FROM employees WHERE id = $1`
+var deleteEmployee string = `DELETE FROM employees WHERE email = $1`
 
 var createProject string = `INSERT INTO projects(name, notes, working_time, created_by) VALUES($1, $2, $3, $4)`
 

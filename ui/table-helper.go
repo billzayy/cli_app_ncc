@@ -93,11 +93,10 @@ func tasksToTableRows(tasks []cli.Tasks) []table.Row {
 	return rows
 }
 
-func employeesToTableRows(emps []cli.Employees) []table.Row {
+func employeesToTableRows(emps []cli.EmployeeDTO) []table.Row {
 	rows := make([]table.Row, len(emps))
 	for i, e := range emps {
 		rows[i] = table.Row{
-			e.Id.String(),
 			e.Email,
 			e.FullName,
 			e.Code,
