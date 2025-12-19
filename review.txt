@@ -1,0 +1,20 @@
+# REVIEW MEETING 18/12
+
+## Mentor:
+* Phân tích chi tiết các lỗi sai của TTS.
+* Phổ cập thêm các kiến thức như SQL, Logging và Error Handling
+* Thoải mái, vui vẻ và chịu khó cùng mình đưa ra lỗi sai và chỉnh sửa nên 10/10 nha
+
+## TTS:
+* Chưa có validate email format trước khi đăng nhập.
+* Chưa có log cho các query (Update, Insert và Delete khi nào)
+* Logic trong code còn chưa tốt.
+* Ứng dụng đang chưa đáp ứng Requirement đã ghi.
+* ERD chưa đạt 3NF
+
+## Tasks:
+* Sửa lại logic cho Employee và Salary đáp ứng với req business.
+* Sửa lại UI cho CLI_APP (chạy liên tục chứ ko chia ra từng đoạn lệnh có flag)
+* Hạn chế hiển thị các thông tin của các audit fields (Id, CreatedBy, CreatTime)
+* Hạn chế connection SQL cho app (Sử dụng insert multi data chứ ko được dùng vòng lặp cho từng Query)
+* Chỉnh sửa lại ERD (Các thông tin như identifiers, bank chỉ cần thêm 1 trường trong bảng Employee - Không cần tạo bảng thêm)

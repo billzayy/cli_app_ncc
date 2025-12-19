@@ -1,0 +1,300 @@
+package database
+
+import (
+	cli "cli-app"
+	"database/sql"
+	"fmt"
+
+	"github.com/google/uuid"
+)
+
+type ProjectRepository interface {
+	Create(in cli.AddProject) error
+	GetAll() ([]cli.Projects, error)
+	GetByID(id uuid.UUID) (cli.Projects, error)
+	Delete(id uuid.UUID) error
+
+	AssignEmployee(in cli.EmployeeProject) error
+	GetAssignedEmployees() ([]cli.GetEmployeesProject, error)
+	UnassignEmployee(projectID, employeeID uuid.UUID) error
+
+	CreateTask(name string, createdBy uuid.UUID) error
+	GetAllTasks() ([]cli.Tasks, error)
+	DeleteTask(id uuid.UUID) error
+
+	AssignTaskToProject(in cli.AssignTaskProject) error
+	UnassignTaskFromProject(employeeID, projectID uuid.UUID) error
+	GetTaskAssignments() ([]cli.GetTaskProject, error)
+}
+
+type projectRepo struct {
+	db *sql.DB
+}
+
+func InitProjectRepo(db *sql.DB) ProjectRepository {
+	return &projectRepo{db: db}
+}
+
+func (r *projectRepo) Create(in cli.AddProject) error {
+	_, err := r.db.Exec(createProject,
+		in.Name,
+		in.Notes,
+		in.WorkingTime,
+		in.CreatedBy,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create project: %w", err)
+	}
+	return nil
+}
+
+func (pr *projectRepo) GetAll() ([]cli.Projects, error) {
+	rows, err := pr.db.Query(getAllProjects)
+
+	if err != nil {
+		return []cli.Projects{}, err
+	}
+
+	var result []cli.Projects
+	var temp cli.Projects
+	for rows.Next() {
+		err := rows.Scan(
+			&temp.Id, &temp.Name, &temp.Notes, &temp.WorkingTime,
+			&temp.CreatedTime, &temp.CreatedBy)
+
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, temp)
+	}
+
+	return result, nil
+}
+
+func (pr *projectRepo) GetByID(id uuid.UUID) (cli.Projects, error) {
+	rows, err := pr.db.Query(getProjectById, id)
+
+	if err != nil {
+		return cli.Projects{}, err
+	}
+
+	var result cli.Projects
+
+	for rows.Next() {
+		err := rows.Scan(&result.Id, &result.Name, &result.Notes, &result.WorkingTime, &result.CreatedTime, &result.CreatedBy)
+
+		if err != nil {
+			return cli.Projects{}, err
+		}
+	}
+
+	return result, nil
+}
+
+func (pr *projectRepo) Delete(id uuid.UUID) error {
+	rows, err := pr.db.Exec(deleteProject, id)
+
+	if err != nil {
+		return err
+	}
+
+	affected, err := rows.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return fmt.Errorf("project not found")
+	}
+
+	return nil
+}
+
+func (pr *projectRepo) AssignEmployee(in cli.EmployeeProject) error {
+	rows, err := pr.db.Exec(assignProject, in.ProjectId, in.EmployeeId, in.Roles, in.CreatedBy)
+
+	if err != nil {
+		return err
+	}
+
+	affected, err := rows.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return fmt.Errorf("can not assign employeee to project")
+	}
+
+	return nil
+}
+
+func (pr *projectRepo) GetAssignedEmployees() ([]cli.GetEmployeesProject, error) {
+	rows, err := pr.db.Query(getAssignProject)
+
+	if err != nil {
+		return []cli.GetEmployeesProject{}, err
+	}
+
+	var result []cli.GetEmployeesProject
+	var temp cli.GetEmployeesProject
+
+	for rows.Next() {
+		err := rows.Scan(&temp.EmployeeId, &temp.ProjectId, &temp.EmployeeName, &temp.Project, &temp.Role)
+
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, temp)
+	}
+
+	return result, nil
+}
+
+func (pr *projectRepo) UnassignEmployee(projectId uuid.UUID, employeeId uuid.UUID) error {
+	row, err := pr.db.Exec(deleteAssignProject, projectId, employeeId)
+
+	if err != nil {
+		return err
+	}
+
+	affected, err := row.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return fmt.Errorf("not found data")
+	}
+
+	return nil
+}
+
+func (pr *projectRepo) CreateTask(nameTask string, id uuid.UUID) error {
+	row, err := pr.db.Exec(createTasks, nameTask, id)
+
+	if err != nil {
+		return err
+	}
+
+	affected, err := row.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return fmt.Errorf("create task failed")
+	}
+
+	return nil
+}
+
+func (pr *projectRepo) GetAllTasks() ([]cli.Tasks, error) {
+	rows, err := pr.db.Query(getAllTasks)
+
+	if err != nil {
+		return []cli.Tasks{}, err
+	}
+
+	var result []cli.Tasks
+	var temp cli.Tasks
+
+	for rows.Next() {
+		err := rows.Scan(&temp.Id, &temp.Name, &temp.CreatedTime, &temp.CreatedBy)
+
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, temp)
+	}
+
+	return result, nil
+}
+
+func (pr *projectRepo) DeleteTask(id uuid.UUID) error {
+	row, err := pr.db.Exec(deleteTasks, id)
+
+	if err != nil {
+		return err
+	}
+
+	affected, err := row.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return fmt.Errorf("not found task")
+	}
+
+	return nil
+}
+
+func (pr *projectRepo) AssignTaskToProject(in cli.AssignTaskProject) error {
+	row, err := pr.db.Exec(addTaskToProject, in.ProjectId, in.TaskId, in.EmployeeId, in.CreatedBy)
+
+	if err != nil {
+		return err
+	}
+
+	affected, err := row.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return fmt.Errorf("Assign Task to project failed")
+	}
+
+	return nil
+}
+
+func (pr *projectRepo) UnassignTaskFromProject(eId uuid.UUID, pId uuid.UUID) error {
+	row, err := pr.db.Exec(deleteTaskToProject, eId, pId)
+
+	if err != nil {
+		return err
+	}
+
+	affected, err := row.RowsAffected()
+
+	if err != nil {
+		return err
+	}
+
+	if affected == 0 {
+		return fmt.Errorf("not found task assignment to project")
+	}
+	return nil
+}
+
+func (pr *projectRepo) GetTaskAssignments() ([]cli.GetTaskProject, error) {
+	rows, err := pr.db.Query(getTaskToProject)
+
+	if err != nil {
+		return []cli.GetTaskProject{}, err
+	}
+
+	var result []cli.GetTaskProject
+	var temp cli.GetTaskProject
+	for rows.Next() {
+		err := rows.Scan(&temp.EmployeeName, &temp.ProjectName, &temp.TaskName)
+
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, temp)
+	}
+
+	return result, nil
+}
