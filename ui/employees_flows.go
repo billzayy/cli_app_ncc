@@ -1,7 +1,7 @@
 package ui
 
 import (
-	cli_app "cli-app"
+	cli "cli-app"
 	"cli-app/components"
 	"cli-app/services"
 	"fmt"
@@ -17,7 +17,7 @@ func createEmployeeFlow(s *services.EmployeeService, createdBy uuid.UUID) error 
 		"Origin", "Residence", "CurrentLocation",
 	}
 
-	input := components.TextInput[cli_app.InputCreateEmployee](fields)
+	input := components.TextInput[cli.InputCreateEmployee](fields)
 
 	addEmp, err := convertToAddEmployee(input, createdBy)
 
@@ -25,19 +25,22 @@ func createEmployeeFlow(s *services.EmployeeService, createdBy uuid.UUID) error 
 		return fmt.Errorf("invalid date of birth: %w", err)
 	}
 
-	return s.CreateEmployee(addEmp)
+	var listInput []cli.AddEmployee
+	listInput = append(listInput, addEmp)
+
+	return s.CreateEmployee(listInput)
 }
 
-func convertToAddEmployee(in cli_app.InputCreateEmployee, createdBy uuid.UUID) (cli_app.AddEmployee, error) {
+func convertToAddEmployee(in cli.InputCreateEmployee, createdBy uuid.UUID) (cli.AddEmployee, error) {
 	const layout = "02-01-2006"
 
 	dob, err := time.Parse(layout, strings.TrimSpace(in.Dob))
 
 	if err != nil {
-		return cli_app.AddEmployee{}, err
+		return cli.AddEmployee{}, err
 	}
 
-	return cli_app.AddEmployee{
+	return cli.AddEmployee{
 		Email:           strings.TrimSpace(in.Email),
 		FullName:        strings.TrimSpace(in.FullName),
 		Code:            strings.TrimSpace(in.Code),

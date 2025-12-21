@@ -20,7 +20,7 @@ func NewEmployeeService(er database.EmployeeRepository) *EmployeeService {
 	}
 }
 
-func (es EmployeeService) CreateEmployee(in cli.AddEmployee) error {
+func (es EmployeeService) CreateEmployee(in []cli.AddEmployee) error {
 	_, err := es.repo.Create(in)
 
 	if err != nil {
@@ -81,7 +81,7 @@ func (es EmployeeService) GetAllEmployees() ([]cli.EmployeeDTO, error) {
 
 func (es *EmployeeService) DeleteEmployee(email string) error {
 	if len(email) == 0 {
-		return fmt.Errorf("invalid employee ID: nil")
+		return fmt.Errorf("invalid employee's email: nil")
 	}
 	return es.repo.Delete(email)
 }
@@ -94,7 +94,7 @@ func (es *EmployeeService) ExportEmployee(filePath string) error {
 	}
 
 	format := [][]string{
-		{"Id", "FullName", "Email", "Code", "Gender", "Phone", "Dob", "CreatedTime", "CreatedBy"},
+		{"FullName", "Email", "Code", "Gender", "Phone", "Dob"},
 	}
 
 	for _, emp := range employeeList {
@@ -113,6 +113,8 @@ func (es *EmployeeService) ExportEmployee(filePath string) error {
 }
 
 func (es *EmployeeService) ImportEmployee(filePath string, importedBy uuid.UUID) error {
+	var listInput []cli.AddEmployee
+
 	if importedBy == uuid.Nil {
 		return fmt.Errorf("importedBy user ID cannot be nil")
 	}
@@ -126,48 +128,47 @@ func (es *EmployeeService) ImportEmployee(filePath string, importedBy uuid.UUID)
 	dataRow := rows[1:]
 
 	for i, v := range dataRow {
-		if len(v) < 7 {
+		if len(v) < 5 {
 			return fmt.Errorf("row %d: insufficient columns", i+2)
 		}
 
-		email := strings.TrimSpace(v[2])
+		email := strings.TrimSpace(v[1])
 
 		if email == "" {
-
 			fmt.Printf("err existed: %e", err)
 			// return fmt.Errorf("row %d: email is empty", i+2)
 		}
 
-		check, err := es.GetEmployeeByEmail(v[2])
-
-		if err == nil {
+		// check, err := es.GetEmployeeByEmail(v[1])
+		//
+		// if err == nil {
+		// 	fmt.Printf("err existed: %e", err)
+		// }
+		//
+		// if check.Email != v[1] {
+		// }
+		parsed, err := time.Parse("2006-01-02", v[5])
+		if err != nil {
 			fmt.Printf("err existed: %e", err)
 		}
 
-		if check.Email != v[2] {
-			parsed, err := time.Parse("2006-01-02 15:04:05 -0700 -0700", v[6])
-			if err != nil {
-				fmt.Printf("err existed: %e", err)
-			}
-
-			formatted := parsed.AddDate(0, 0, 0)
-			in := cli.AddEmployee{
-				Email:     v[2],
-				FullName:  v[1],
-				Code:      v[3],
-				Gender:    v[4],
-				Phone:     v[5],
-				Dob:       formatted,
-				CreatedBy: importedBy,
-			}
-
-			if err := es.CreateEmployee(in); err != nil {
-
-				fmt.Printf("err existed: %e", err)
-				// return fmt.Errorf("failed to import row %d (email: %s): %w", i+2, email, err)
-			}
+		formatted := parsed.AddDate(0, 0, 0)
+		in := cli.AddEmployee{
+			Email:     v[1],
+			FullName:  v[0],
+			Code:      v[2],
+			Gender:    v[3],
+			Phone:     v[4],
+			Dob:       formatted,
+			CreatedBy: importedBy,
 		}
+
+		listInput = append(listInput, in)
 	}
 
+	if err = es.CreateEmployee(listInput); err != nil {
+		fmt.Printf("err existed: %e", err)
+		// return fmt.Errorf("failed to import row %d (email: %s): %w", i+2, email, err)
+	}
 	return nil
 }

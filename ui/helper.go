@@ -14,7 +14,7 @@ func readInt(prompt string, max int) int {
 			fmt.Println("Invalid input. Please enter a number between 1 and", max)
 			// Clear remaining input buffer
 			var discard string
-			fmt.Scanln(&discard)
+			fmt.Scan(&discard)
 			continue
 		}
 		return input
@@ -25,4 +25,6 @@ func exportOnChange(s *services.EmployeeService) {
 	if err := s.ExportEmployee(employeeCSVPath); err != nil {
 		fmt.Printf("Warning: Failed to export employees: %v\n", err)
 	}
+
+	fmt.Println("Export successul!")
 }

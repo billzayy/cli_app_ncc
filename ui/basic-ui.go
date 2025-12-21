@@ -29,9 +29,11 @@ func NewApp(db *sql.DB) *App {
 
 func (a *App) Run() error {
 	id, err := a.promptEmployeeID()
+
 	if err != nil {
 		return fmt.Errorf("failed to identify employee: %w", err)
 	}
+
 	for {
 		choice := a.ShowMainMenu()
 
@@ -128,6 +130,7 @@ func (a *App) ShowMainMenu() int {
 	return choose
 }
 
+// TODO: check email format
 func (a *App) promptEmployeeID() (uuid.UUID, error) {
 	var email string
 	fmt.Print("\nWho are you? (Input email): ")

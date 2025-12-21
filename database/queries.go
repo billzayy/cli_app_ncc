@@ -8,7 +8,7 @@ var createBranch string = `INSERT INTO branches(name,created_by) VALUES($1,$2)`
 
 var createEmployee string = `
 	INSERT INTO employees(email, full_name, code, dob, phone, gender, created_by) 
-	VALUES ($1,$2,$3,$4,$5,$6,$7)`
+	VALUES %s `
 
 var getIdEmployee string = `SELECT id from employees WHERE email = $1`
 

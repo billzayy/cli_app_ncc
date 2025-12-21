@@ -7,11 +7,13 @@ import (
 	"log"
 	"strings"
 
+	// "strings"
+
 	"github.com/google/uuid"
 )
 
 type EmployeeRepository interface {
-	Create(input cli.AddEmployee) (bool, error)
+	Create(input []cli.AddEmployee) (bool, error)
 	GetID(email string) (uuid.UUID, error)
 	GetByEmail(email string) (cli.EmployeeDTO, error)
 	GetAll() ([]cli.EmployeeDTO, error)
@@ -28,35 +30,38 @@ func InitEmployeeRepo(db *sql.DB) EmployeeRepository {
 	}
 }
 
-func (er *employeeRepo) Create(input cli.AddEmployee) (bool, error) {
-	// In ra câu lệnh SQL gốc
-	log.Printf("Executing SQL: %s", createEmployee)
+func (er *employeeRepo) Create(input []cli.AddEmployee) (bool, error) {
+	values := []string{}
+	args := []interface{}{}
+	argPos := 1
 
-	// In ra các tham số truyền vào (theo thứ tự)
-	log.Printf("Parameters: Email=%s, FullName=%s, Code=%s, Dob=%s, Phone=%s, Gender=%s, CreatedBy=%s",
-		input.Email, input.FullName, input.Code, input.Dob, input.Phone, input.Gender, input.CreatedBy)
+	for _, e := range input {
+		values = append(values,
+			fmt.Sprintf("($%d,$%d,$%d,$%d,$%d,$%d,$%d)",
+				argPos, argPos+1, argPos+2,
+				argPos+3, argPos+4, argPos+5, argPos+6,
+			),
+		)
 
-	// Tạo phiên bản SQL "bound" (thay ? bằng giá trị thực, chỉ để debug - chú ý escape quote nếu cần)
-	boundSQL := createEmployee
+		args = append(args,
+			e.Email,
+			e.FullName,
+			e.Code,
+			e.Dob,
+			e.Phone,
+			e.Gender,
+			e.CreatedBy,
+		)
 
-	params := []interface{}{
-		input.Email, input.FullName, input.Code, input.Dob, input.Phone, input.Gender, input.CreatedBy,
+		argPos += 7
 	}
 
-	for _, p := range params {
-		if s, ok := p.(string); ok {
-			// Escape single quote đơn giản cho debug
-			escaped := strings.ReplaceAll(s, "'", "''")
-			boundSQL = strings.Replace(boundSQL, "?", fmt.Sprintf("'%s'", escaped), 1)
-		} else {
-			boundSQL = strings.Replace(boundSQL, "?", fmt.Sprintf("%v", p), 1)
-		}
-	}
+	query := fmt.Sprintf(createEmployee, strings.Join(values, ","))
 
-	log.Printf("Bound SQL (for debugging): %s", boundSQL)
+	query += "ON CONFLICT (email) DO NOTHING" // Add confict query will do nothing when conflict email import
 
 	// Thực thi query
-	res, err := er.db.Exec(createEmployee, input.Email, input.FullName, input.Code, input.Dob, input.Phone, input.Gender, input.CreatedBy)
+	res, err := er.db.Exec(query, args...)
 	if err != nil {
 		log.Printf("Error executing query: %v", err)
 		return false, err
@@ -174,4 +179,33 @@ func (er *employeeRepo) Delete(email string) error {
 	}
 
 	return nil
+}
+
+func Debug() {
+
+	// // In ra câu lệnh SQL gốc
+	// log.Printf("\nExecuting SQL: %s", createEmployee)
+	//
+	// // In ra các tham số truyền vào (theo thứ tự)
+	// log.Printf("Parameters: Email=%s, FullName=%s, Code=%s, Dob=%s, Phone=%s, Gender=%s, CreatedBy=%s",
+	// 	input.Email, input.FullName, input.Code, input.Dob, input.Phone, input.Gender, input.CreatedBy)
+	//
+	// // Tạo phiên bản SQL "bound" (thay ? bằng giá trị thực, chỉ để debug - chú ý escape quote nếu cần)
+	// boundSQL := createEmployee
+	//
+	// params := []interface{}{
+	// 	input.Email, input.FullName, input.Code, input.Dob, input.Phone, input.Gender, input.CreatedBy,
+	// }
+	//
+	// for _, p := range params {
+	// 	if s, ok := p.(string); ok {
+	// 		// Escape single quote đơn giản cho debug
+	// 		escaped := strings.ReplaceAll(s, "'", "''")
+	// 		boundSQL = strings.Replace(boundSQL, "?", fmt.Sprintf("'%s'", escaped), 1)
+	// 	} else {
+	// 		boundSQL = strings.Replace(boundSQL, "?", fmt.Sprintf("%v", p), 1)
+	// 	}
+	// }
+	//
+	// log.Printf("Bound SQL (for debugging): %s", boundSQL)
 }
