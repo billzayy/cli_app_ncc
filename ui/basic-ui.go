@@ -133,7 +133,9 @@ func (a *App) ShowMainMenu() int {
 // TODO: check email format
 func (a *App) promptEmployeeID() (uuid.UUID, error) {
 	var email string
+
 	fmt.Print("\nWho are you? (Input email): ")
+
 	_, err := fmt.Scan(&email)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to read email: %w", err)

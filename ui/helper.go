@@ -3,6 +3,7 @@ package ui
 import (
 	"cli-app/services"
 	"fmt"
+	"strings"
 )
 
 func readInt(prompt string, max int) int {
@@ -12,7 +13,6 @@ func readInt(prompt string, max int) int {
 		_, err := fmt.Scan(&input)
 		if err != nil || input < 1 || input > max {
 			fmt.Println("Invalid input. Please enter a number between 1 and", max)
-			// Clear remaining input buffer
 			var discard string
 			fmt.Scan(&discard)
 			continue
@@ -27,4 +27,13 @@ func exportOnChange(s *services.EmployeeService) {
 	}
 
 	fmt.Println("Export successul!")
+}
+
+func validateEmail(email string) (string, error) {
+	email = strings.TrimSpace(email)
+	if email == "" {
+		return "", fmt.Errorf("email cannot be empty")
+	}
+
+	return email, nil
 }
