@@ -4,6 +4,7 @@ import (
 	cli "cli-app"
 	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/google/uuid"
 )
@@ -36,7 +37,7 @@ func InitProjectRepo(db *sql.DB) ProjectRepository {
 }
 
 func (r *projectRepo) Create(in cli.AddProject) error {
-	_, err := r.db.Exec(createProject,
+	row, err := r.db.Exec(createProject,
 		in.Name,
 		in.Notes,
 		in.WorkingTime,
@@ -45,6 +46,14 @@ func (r *projectRepo) Create(in cli.AddProject) error {
 	if err != nil {
 		return fmt.Errorf("failed to create project: %w", err)
 	}
+
+	affected, err := row.RowsAffected()
+
+	if affected == 0 {
+		return fmt.Errorf("no project is added")
+	}
+
+	log.Printf("[SQL RESULT] rows_affected=%d", affected)
 	return nil
 }
 
@@ -54,6 +63,7 @@ func (pr *projectRepo) GetAll() ([]cli.Projects, error) {
 	if err != nil {
 		return []cli.Projects{}, err
 	}
+	defer rows.Close()
 
 	var result []cli.Projects
 	var temp cli.Projects
@@ -68,6 +78,7 @@ func (pr *projectRepo) GetAll() ([]cli.Projects, error) {
 
 		result = append(result, temp)
 	}
+	log.Printf("[SQL RESULT] %+v", result)
 
 	return result, nil
 }
@@ -78,6 +89,7 @@ func (pr *projectRepo) GetByID(id uuid.UUID) (cli.Projects, error) {
 	if err != nil {
 		return cli.Projects{}, err
 	}
+	defer rows.Close()
 
 	var result cli.Projects
 
@@ -88,6 +100,8 @@ func (pr *projectRepo) GetByID(id uuid.UUID) (cli.Projects, error) {
 			return cli.Projects{}, err
 		}
 	}
+
+	log.Printf("[SQL RESULT] %+v", result)
 
 	return result, nil
 }
@@ -108,6 +122,7 @@ func (pr *projectRepo) Delete(id uuid.UUID) error {
 	if affected == 0 {
 		return fmt.Errorf("project not found")
 	}
+	log.Printf("[SQL RESULT] rows_affected=%d", affected)
 
 	return nil
 }
@@ -128,6 +143,7 @@ func (pr *projectRepo) AssignEmployee(in cli.EmployeeProject) error {
 	if affected == 0 {
 		return fmt.Errorf("can not assign employeee to project")
 	}
+	log.Printf("[SQL RESULT] rows_affected=%d", affected)
 
 	return nil
 }
@@ -138,6 +154,7 @@ func (pr *projectRepo) GetAssignedEmployees() ([]cli.GetEmployeesProject, error)
 	if err != nil {
 		return []cli.GetEmployeesProject{}, err
 	}
+	defer rows.Close()
 
 	var result []cli.GetEmployeesProject
 	var temp cli.GetEmployeesProject
@@ -151,6 +168,7 @@ func (pr *projectRepo) GetAssignedEmployees() ([]cli.GetEmployeesProject, error)
 
 		result = append(result, temp)
 	}
+	log.Printf("[SQL RESULT] %+v", result)
 
 	return result, nil
 }
@@ -171,6 +189,7 @@ func (pr *projectRepo) UnassignEmployee(projectId uuid.UUID, employeeId uuid.UUI
 	if affected == 0 {
 		return fmt.Errorf("not found data")
 	}
+	log.Printf("[SQL RESULT] rows_affected=%d", affected)
 
 	return nil
 }
@@ -191,6 +210,7 @@ func (pr *projectRepo) CreateTask(nameTask string, id uuid.UUID) error {
 	if affected == 0 {
 		return fmt.Errorf("create task failed")
 	}
+	log.Printf("[SQL RESULT] rows_affected=%d", affected)
 
 	return nil
 }
@@ -201,6 +221,7 @@ func (pr *projectRepo) GetAllTasks() ([]cli.Tasks, error) {
 	if err != nil {
 		return []cli.Tasks{}, err
 	}
+	defer rows.Close()
 
 	var result []cli.Tasks
 	var temp cli.Tasks
@@ -214,6 +235,7 @@ func (pr *projectRepo) GetAllTasks() ([]cli.Tasks, error) {
 
 		result = append(result, temp)
 	}
+	log.Printf("[SQL RESULT] %+v", result)
 
 	return result, nil
 }
@@ -234,6 +256,7 @@ func (pr *projectRepo) DeleteTask(id uuid.UUID) error {
 	if affected == 0 {
 		return fmt.Errorf("not found task")
 	}
+	log.Printf("[SQL RESULT] rows_affected=%d", affected)
 
 	return nil
 }
@@ -254,6 +277,7 @@ func (pr *projectRepo) AssignTaskToProject(in cli.AssignTaskProject) error {
 	if affected == 0 {
 		return fmt.Errorf("Assign Task to project failed")
 	}
+	log.Printf("[SQL RESULT] rows_affected=%d", affected)
 
 	return nil
 }
@@ -274,6 +298,9 @@ func (pr *projectRepo) UnassignTaskFromProject(eId uuid.UUID, pId uuid.UUID) err
 	if affected == 0 {
 		return fmt.Errorf("not found task assignment to project")
 	}
+
+	log.Printf("[SQL RESULT] rows_affected=%d", affected)
+
 	return nil
 }
 
@@ -283,6 +310,7 @@ func (pr *projectRepo) GetTaskAssignments() ([]cli.GetTaskProject, error) {
 	if err != nil {
 		return []cli.GetTaskProject{}, err
 	}
+	defer rows.Close()
 
 	var result []cli.GetTaskProject
 	var temp cli.GetTaskProject
@@ -295,6 +323,7 @@ func (pr *projectRepo) GetTaskAssignments() ([]cli.GetTaskProject, error) {
 
 		result = append(result, temp)
 	}
+	log.Printf("[SQL RESULT] %+v", result)
 
 	return result, nil
 }

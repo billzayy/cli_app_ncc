@@ -7,8 +7,6 @@ import (
 	"log"
 	"strings"
 
-	// "strings"
-
 	"github.com/google/uuid"
 )
 
@@ -78,7 +76,7 @@ func (er *employeeRepo) Create(input []cli.AddEmployee) (bool, error) {
 		return false, nil // hoặc error tùy yêu cầu
 	}
 
-	log.Printf("Successfully inserted %d row(s)", affected)
+	log.Printf("[SQL RESULT] rows_affected=%d", affected)
 	return true, nil
 }
 
@@ -90,6 +88,8 @@ func (er *employeeRepo) GetID(email string) (uuid.UUID, error) {
 		return result, nil
 	}
 
+	defer rows.Close()
+
 	var temp string
 	for rows.Next() {
 		err := rows.Scan(&temp)
@@ -100,6 +100,7 @@ func (er *employeeRepo) GetID(email string) (uuid.UUID, error) {
 
 		result = uuid.MustParse(temp)
 	}
+	log.Printf("[SQL RESULT] %+v", result)
 
 	return result, nil
 }
@@ -110,6 +111,8 @@ func (er *employeeRepo) GetByEmail(email string) (cli.EmployeeDTO, error) {
 	if err != nil {
 		return cli.EmployeeDTO{}, err
 	}
+
+	defer rows.Close()
 
 	var result cli.EmployeeDTO
 	var phone sql.NullString
@@ -128,6 +131,8 @@ func (er *employeeRepo) GetByEmail(email string) (cli.EmployeeDTO, error) {
 		}
 	}
 
+	log.Printf("[SQL RESULT] %+v", result)
+
 	return result, nil
 }
 
@@ -137,6 +142,8 @@ func (er *employeeRepo) GetAll() ([]cli.EmployeeDTO, error) {
 	if err != nil {
 		return []cli.EmployeeDTO{}, err
 	}
+
+	defer rows.Close()
 
 	var result []cli.EmployeeDTO
 	var temp cli.EmployeeDTO
@@ -158,6 +165,8 @@ func (er *employeeRepo) GetAll() ([]cli.EmployeeDTO, error) {
 		result = append(result, temp)
 	}
 
+	log.Printf("[SQL RESULT] %+v", result)
+
 	return result, nil
 }
 
@@ -178,34 +187,7 @@ func (er *employeeRepo) Delete(email string) error {
 		return fmt.Errorf("not found employee")
 	}
 
+	log.Printf("[SQL RESULT] rows_affected=%d", affected)
+
 	return nil
-}
-
-func Debug() {
-
-	// // In ra câu lệnh SQL gốc
-	// log.Printf("\nExecuting SQL: %s", createEmployee)
-	//
-	// // In ra các tham số truyền vào (theo thứ tự)
-	// log.Printf("Parameters: Email=%s, FullName=%s, Code=%s, Dob=%s, Phone=%s, Gender=%s, CreatedBy=%s",
-	// 	input.Email, input.FullName, input.Code, input.Dob, input.Phone, input.Gender, input.CreatedBy)
-	//
-	// // Tạo phiên bản SQL "bound" (thay ? bằng giá trị thực, chỉ để debug - chú ý escape quote nếu cần)
-	// boundSQL := createEmployee
-	//
-	// params := []interface{}{
-	// 	input.Email, input.FullName, input.Code, input.Dob, input.Phone, input.Gender, input.CreatedBy,
-	// }
-	//
-	// for _, p := range params {
-	// 	if s, ok := p.(string); ok {
-	// 		// Escape single quote đơn giản cho debug
-	// 		escaped := strings.ReplaceAll(s, "'", "''")
-	// 		boundSQL = strings.Replace(boundSQL, "?", fmt.Sprintf("'%s'", escaped), 1)
-	// 	} else {
-	// 		boundSQL = strings.Replace(boundSQL, "?", fmt.Sprintf("%v", p), 1)
-	// 	}
-	// }
-	//
-	// log.Printf("Bound SQL (for debugging): %s", boundSQL)
 }

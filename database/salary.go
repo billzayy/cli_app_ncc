@@ -3,6 +3,7 @@ package database
 import (
 	cli "cli-app"
 	"database/sql"
+	"log"
 )
 
 type SalaryRepository interface {
@@ -23,6 +24,7 @@ func (sr *salaryRepo) GetTimeAndAmount(month int) ([]cli.TimeAndAmount, error) {
 	if err != nil {
 		return []cli.TimeAndAmount{}, err
 	}
+	defer rows.Close()
 
 	var result []cli.TimeAndAmount
 	var temp cli.TimeAndAmount
@@ -36,6 +38,7 @@ func (sr *salaryRepo) GetTimeAndAmount(month int) ([]cli.TimeAndAmount, error) {
 
 		result = append(result, temp)
 	}
+	log.Printf("[SQL RESULT] %+v", result)
 
 	return result, nil
 }

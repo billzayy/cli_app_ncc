@@ -24,7 +24,7 @@ func exportOnChange(s *services.EmployeeService) {
 		fmt.Printf("Warning: Failed to export employees: %v\n", err)
 	}
 
-	fmt.Println("Export successul!")
+	fmt.Println("✓ Export successul!")
 }
 
 func validateEmail(email string) (string, error) {
