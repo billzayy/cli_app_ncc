@@ -7,8 +7,17 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
+	"github.com/lib/pq"
+	"github.com/qustavo/sqlhooks/v2"
 )
+
+func init() {
+	// Register driver ONCE
+	sql.Register(
+		"postgresWithHook",
+		sqlhooks.Wrap(&pq.Driver{}, &QueryLogger{}),
+	)
+}
 
 func ConnectDB() (*sql.DB, error) {
 	err := godotenv.Load(".env")
@@ -27,7 +36,7 @@ func ConnectDB() (*sql.DB, error) {
 	connectStr := fmt.Sprintf("postgresql://%s:%s@%s:%s/%s?sslmode=disable", USERNAME, PASSWORD, HOST, PORT, DATABASE)
 
 	// Connect to the database
-	conn, err := sql.Open("postgres", connectStr)
+	conn, err := sql.Open("postgresWithHook", connectStr)
 
 	if err != nil {
 		return &sql.DB{}, err

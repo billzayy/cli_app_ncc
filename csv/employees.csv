@@ -1,6 +1,7 @@
 FullName,Email,Code,Gender,Phone,Dob
+Super Admin,admin@example.com,ADMIN001,do not tell,,1990-01-01
+Tuan Phan Le,phanletuan@gmail.com,123,male,0932149716,2002-10-20
 Tuan,hello@gmail.com,12344,male,0392149716,2002-10-20
-Super Admin,admin@example.com,ADMIN001,do not tell,0392149716,1990-01-01
 John Smith,john.smith@example.com,USR001,male,12025550101,1995-06-21
 Emily Johnson,emily.johnson@example.com,USR002,female,12025550102,1998-09-03
 Michael Brown,michael.brown@example.com,USR003,male,12025550103,1992-01-17
@@ -8,7 +9,6 @@ Sarah Davis,sarah.davis@example.com,USR004,female,12025550104,1997-12-25
 David Wilson,david.wilson@example.com,USR005,male,12025550105,1990-04-10
 Laura Martinez,laura.martinez@example.com,USR006,female,1202555015,1999-08-29
 James Anderson,james.anderson@example.com,USR007,male,1202555016,1993-02-06
-Tuan Phan Le,phanletuan@gmail.com,123,male,0932149716,2002-10-20
 Sophia Taylor,sophia.taylor@example.com,USR008,female,1202555017,2000-07-15
 Daniel Thomas,daniel.thomas@example.com,USR009,male,1202555018,1989-10-01
 Olivia Moore,olivia.moore@example.com,USR010,female,1202555019,2001-05-19
