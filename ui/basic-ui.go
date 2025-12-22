@@ -4,7 +4,6 @@ import (
 	"cli-app/database"
 	"cli-app/services"
 	"database/sql"
-	"flag"
 	"fmt"
 	"strconv"
 
@@ -28,10 +27,18 @@ func NewApp(db *sql.DB) *App {
 }
 
 func (a *App) Run() error {
-	id, err := a.promptEmployeeID()
+	var globalId uuid.UUID
+	for {
 
-	if err != nil {
-		return fmt.Errorf("failed to identify employee: %w", err)
+		eId, err := a.promptEmployeeID()
+
+		if err != nil {
+			fmt.Println("failed to identify employee: %w", err)
+			continue
+		}
+
+		globalId = eId
+		break
 	}
 
 	for {
@@ -43,65 +50,20 @@ func (a *App) Run() error {
 
 		switch choice {
 		case 1:
-			a.ShowEmployeeMenu(id)
+			a.ShowEmployeeMenu(globalId)
 		case 2:
 			a.ShowAdditionMenu()
 		case 3:
 			a.ShowRoleMenu()
 		case 4:
-			a.ShowProjectMenu(id)
+			a.ShowProjectMenu(globalId)
 		case 5:
-			a.ShowSalaryMenu(id)
+			a.ShowSalaryMenu(globalId)
 		default:
-			a.printUsage()
 			return fmt.Errorf("invalid menu option: %q", choice)
 		}
 	}
 
-}
-
-func (a *App) RunWFlag() error {
-	menu := flag.String("menu", "", "Menu option: all, employee, addition, role, project, salary (or numbers 1-5)")
-	flag.Parse()
-
-	input := *menu
-	choice := a.parseChoice(input)
-
-	switch {
-	case input == "" || input == "all" || choice == 0:
-		a.ShowMainMenu()
-		return nil
-	case input == "employee" || choice == 1:
-		id, err := a.promptEmployeeID()
-		if err != nil {
-			return fmt.Errorf("failed to identify employee: %w", err)
-		}
-		a.ShowEmployeeMenu(id)
-		return nil
-	case input == "addition" || choice == 2:
-		a.ShowAdditionMenu()
-		return nil
-	case input == "role" || choice == 3:
-		a.ShowRoleMenu()
-		return nil
-	case input == "project" || choice == 4:
-		id, err := a.promptEmployeeID()
-		if err != nil {
-			return fmt.Errorf("failed to identify employee: %w", err)
-		}
-		a.ShowProjectMenu(id)
-		return nil
-	case input == "salary" || choice == 5:
-		id, err := a.promptEmployeeID()
-		if err != nil {
-			return fmt.Errorf("failed to identify employee: %w", err)
-		}
-		a.ShowSalaryMenu(id)
-		return nil
-	default:
-		a.printUsage()
-		return fmt.Errorf("invalid menu option: %q", input)
-	}
 }
 
 func (a *App) parseChoice(input string) int {
@@ -130,16 +92,23 @@ func (a *App) ShowMainMenu() int {
 	return choose
 }
 
-// TODO: check email format
 func (a *App) promptEmployeeID() (uuid.UUID, error) {
 	var email string
+
 	fmt.Print("\nWho are you? (Input email): ")
+
 	_, err := fmt.Scan(&email)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to read email: %w", err)
 	}
 	if email == "" {
 		return uuid.Nil, fmt.Errorf("email cannot be empty")
+	}
+
+	email, err = validateEmail(email)
+
+	if err != nil {
+		return uuid.Nil, err
 	}
 
 	id, err := a.empSvc.GetEmployeeId(email)
@@ -170,16 +139,4 @@ func (a *App) ShowProjectMenu(employeeID uuid.UUID) {
 
 func (a *App) ShowSalaryMenu(employeeID uuid.UUID) {
 	MenuSalary(a.empSvc, a.salSvc, &employeeID)
-}
-
-func (a *App) printUsage() {
-	fmt.Println("Usage: go run ./cmd/main.go --menu=<option>")
-	fmt.Println("\nAvailable options:")
-	fmt.Println(" (empty) or 'all' - Show this menu")
-	fmt.Println(" employee or 1 - Employee menu")
-	fmt.Println(" addition or 2 - Additional Employee (WIP)")
-	fmt.Println(" role or 3 - Roles menu (WIP)")
-	fmt.Println(" project or 4 - Projects menu")
-	fmt.Println(" salary or 5 - Salary menu")
-	fmt.Println("\nExample: go run . --menu=project")
 }

@@ -32,10 +32,6 @@ func (es EmployeeService) CreateEmployee(in []cli.AddEmployee) error {
 }
 
 func (es EmployeeService) GetEmployeeId(email string) (uuid.UUID, error) {
-	email = strings.TrimSpace(email)
-	if email == "" {
-		return uuid.Nil, fmt.Errorf("email cannot be empty")
-	}
 	id, err := es.repo.GetID(email)
 
 	if err != nil {
@@ -136,7 +132,6 @@ func (es *EmployeeService) ImportEmployee(filePath string, importedBy uuid.UUID)
 
 		if email == "" {
 			fmt.Printf("err existed: %e", err)
-			// return fmt.Errorf("row %d: email is empty", i+2)
 		}
 
 		// check, err := es.GetEmployeeByEmail(v[1])

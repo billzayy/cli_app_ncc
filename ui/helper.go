@@ -3,6 +3,7 @@ package ui
 import (
 	"cli-app/services"
 	"fmt"
+	"strings"
 )
 
 func readInt(prompt string, max int) int {
@@ -11,10 +12,7 @@ func readInt(prompt string, max int) int {
 		var input int
 		_, err := fmt.Scan(&input)
 		if err != nil || input < 1 || input > max {
-			fmt.Println("Invalid input. Please enter a number between 1 and", max)
-			// Clear remaining input buffer
-			var discard string
-			fmt.Scan(&discard)
+			fmt.Printf("Invalid input. Please enter a number between 1 and %d\n", max)
 			continue
 		}
 		return input
@@ -27,4 +25,30 @@ func exportOnChange(s *services.EmployeeService) {
 	}
 
 	fmt.Println("Export successul!")
+}
+
+func validateEmail(email string) (string, error) {
+	email = strings.TrimSpace(email)
+	if email == "" {
+		return "", fmt.Errorf("email cannot be empty")
+	}
+
+	checkAtSign := strings.Contains(email, "@")
+
+	if !checkAtSign {
+		return "", fmt.Errorf("Missing @ for email format")
+	}
+
+	domain := strings.Split(email, "@")[1]
+	splitDomain := strings.Split(domain, ".")
+
+	if len(splitDomain) == 0 {
+		return "", fmt.Errorf("Missing domain for email")
+	}
+
+	if splitDomain[0] != "gmail" || splitDomain[1] != "com" {
+		return "", fmt.Errorf("Missing domain name format")
+	}
+
+	return email, nil
 }
