@@ -132,7 +132,6 @@ func (es *EmployeeService) ImportEmployee(filePath string, importedBy uuid.UUID)
 
 		if email == "" {
 			fmt.Printf("err existed: %e", err)
-			// return fmt.Errorf("row %d: email is empty", i+2)
 		}
 
 		// check, err := es.GetEmployeeByEmail(v[1])

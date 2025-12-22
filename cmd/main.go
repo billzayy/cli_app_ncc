@@ -4,7 +4,6 @@ import (
 	"cli-app/database"
 	"cli-app/ui"
 	"log"
-	"os"
 )
 
 func main() {
@@ -20,6 +19,5 @@ func main() {
 
 	if err := ui.NewApp(db).Run(); err != nil {
 		log.Printf("Application error: %v", err)
-		os.Exit(1)
 	}
 }
