@@ -92,9 +92,22 @@ func readAllEmployeesFlow(s *services.EmployeeService) {
 
 	fmt.Printf("\nTotal Employees: %d\n\n", len(list))
 
-	for _, emp := range list {
-		fmt.Printf("%+v\n\n", emp)
-	}
+	components.ViewPaginationList(
+		list,
+		func(e cli.EmployeeDTO) string {
+			return strings.Join([]string{
+				"Email: " + e.Email,
+				"Name: " + e.FullName,
+				"Code: " + e.Code,
+				"Phone: " + e.Phone,
+				"Gender: " + string(e.Gender),
+				"DOB: " + e.Dob.Format("2006-01-02"),
+			}, " | ")
+		},
+		components.WithPerPage(8),
+		components.WithTitle("All Employees"),
+		components.WithHelp(true),
+	)
 }
 
 func deleteEmployeeFlow(s *services.EmployeeService) error {
