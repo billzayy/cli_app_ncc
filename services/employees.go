@@ -45,20 +45,16 @@ func (es EmployeeService) GetEmployeeId(email string) (uuid.UUID, error) {
 	return id, nil
 }
 
-func (es EmployeeService) GetEmployeeByEmail(email string) (cli.EmployeeDTO, error) {
-	email = strings.TrimSpace(email)
+func (es EmployeeService) GetEmployeeBy(input string, filter string) (cli.EmployeeDTO, error) {
+	input = strings.TrimSpace(input)
 
-	if email == "" {
-		return cli.EmployeeDTO{}, fmt.Errorf("email cannot be empty")
+	if input == "" {
+		return cli.EmployeeDTO{}, fmt.Errorf("%s cannot be empty", filter)
 	}
 
-	result, err := es.repo.GetByEmail(email)
+	result, err := es.repo.GetByInput(input, filter)
 
 	if err != nil {
-		return result, err
-	}
-
-	if result.Email == "" {
 		return result, err
 	}
 
@@ -134,14 +130,6 @@ func (es *EmployeeService) ImportEmployee(filePath string, importedBy uuid.UUID)
 			fmt.Printf("err existed: %e", err)
 		}
 
-		// check, err := es.GetEmployeeByEmail(v[1])
-		//
-		// if err == nil {
-		// 	fmt.Printf("err existed: %e", err)
-		// }
-		//
-		// if check.Email != v[1] {
-		// }
 		parsed, err := time.Parse("2006-01-02", v[5])
 		if err != nil {
 			fmt.Printf("err existed: %e", err)

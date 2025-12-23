@@ -13,7 +13,7 @@ import (
 type EmployeeRepository interface {
 	Create(input []cli.AddEmployee) (bool, error)
 	GetID(email string) (uuid.UUID, error)
-	GetByEmail(email string) (cli.EmployeeDTO, error)
+	GetByInput(input string, filter string) (cli.EmployeeDTO, error)
 	GetAll() ([]cli.EmployeeDTO, error)
 	Delete(email string) error
 }
@@ -105,8 +105,19 @@ func (er *employeeRepo) GetID(email string) (uuid.UUID, error) {
 	return result, nil
 }
 
-func (er *employeeRepo) GetByEmail(email string) (cli.EmployeeDTO, error) {
-	rows, err := er.db.Query(getEmployeeByEmail, email)
+func (er *employeeRepo) GetByInput(input string, filter string) (cli.EmployeeDTO, error) {
+	query := getEmployeeBy
+
+	switch filter {
+	case "email":
+		query += "WHERE email = $1"
+	case "code":
+		query += "WHERE code = $1"
+	default:
+		return cli.EmployeeDTO{}, fmt.Errorf("Filter is empty")
+	}
+
+	rows, err := er.db.Query(query, input)
 
 	if err != nil {
 		return cli.EmployeeDTO{}, err
@@ -137,7 +148,7 @@ func (er *employeeRepo) GetByEmail(email string) (cli.EmployeeDTO, error) {
 }
 
 func (er *employeeRepo) GetAll() ([]cli.EmployeeDTO, error) {
-	rows, err := er.db.Query(getAllEmployees)
+	rows, err := er.db.Query(getEmployeeBy)
 
 	if err != nil {
 		return []cli.EmployeeDTO{}, err

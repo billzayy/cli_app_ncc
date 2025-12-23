@@ -205,7 +205,7 @@ func TextInput[T any](titles []string) T {
 		panic(fmt.Sprintf("expected %d inputs, got %d", numFields, len(m.inputs)))
 	}
 
-	for i := 0; i < numFields; i++ {
+	for i := range numFields {
 		inputValue := m.inputs[i].Value()
 		field := v.Field(i)
 		if field.CanSet() {

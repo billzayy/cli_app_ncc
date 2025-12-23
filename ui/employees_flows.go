@@ -67,7 +67,7 @@ func readEmployeeByEmailFlow(s *services.EmployeeService) {
 		return
 	}
 
-	emp, err := s.GetEmployeeByEmail(email)
+	emp, err := s.GetEmployeeBy(email, "email")
 
 	if err != nil {
 		fmt.Printf("Error: %v\n", err)
@@ -75,6 +75,61 @@ func readEmployeeByEmailFlow(s *services.EmployeeService) {
 	}
 
 	fmt.Printf("\nEmployee Details:\n%+v\n", emp)
+}
+
+func readEmployeeByCodeFlow(s *services.EmployeeService) {
+	var code string
+
+	fmt.Print("Enter employee code: ")
+	fmt.Scan(&code)
+
+	code = strings.TrimSpace(code)
+
+	if code == "" {
+		fmt.Println("Code cannot be empty.")
+		return
+	}
+
+	emp, err := s.GetEmployeeBy(code, "code")
+
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+
+	fmt.Printf("\nEmployee Details:\n%+v\n", emp)
+}
+
+func readEmployeeMenu(s *services.EmployeeService) {
+	options := []string{
+		"Read Employee (by Email)",
+		"Read Employee (by Code)",
+		"Back to Main menu",
+	}
+
+	for {
+		fmt.Println("\n=== Read Employees ===")
+		for i, opt := range options {
+			fmt.Printf("%d. %s\n", i+1, opt)
+		}
+
+		choice := readInt("Choose an option (1-2): ", len(options))
+		if choice == 0 {
+			continue
+		}
+
+		switch choice {
+		case 1:
+			readEmployeeByEmailFlow(s)
+		case 2:
+			readEmployeeByCodeFlow(s)
+		case 3:
+			return
+		default:
+			fmt.Println("Please choose option correctly !")
+			continue
+		}
+	}
 }
 
 func readAllEmployeesFlow(s *services.EmployeeService) {

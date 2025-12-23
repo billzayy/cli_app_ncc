@@ -12,7 +12,7 @@ const employeeCSVPath = "./csv/employees.csv"
 func MenuEmployee(s *services.EmployeeService, currentUserID uuid.UUID) {
 	options := []string{
 		"Create New Employee",
-		"Read Employee (by Email)",
+		"Read Employee",
 		"Read All Employees",
 		"Update Employee",
 		"Delete Employee",
@@ -41,7 +41,7 @@ func MenuEmployee(s *services.EmployeeService, currentUserID uuid.UUID) {
 				exportOnChange(s)
 			}
 		case 2:
-			readEmployeeByEmailFlow(s)
+			readEmployeeMenu(s)
 		case 3:
 			readAllEmployeesFlow(s)
 		case 4:

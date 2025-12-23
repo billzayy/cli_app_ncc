@@ -12,9 +12,7 @@ var createEmployee string = `
 
 var getIdEmployee string = `SELECT id from employees WHERE email = $1`
 
-var getAllEmployees string = `SELECT email, full_name, code, gender, phone, dob FROM employees`
-
-var getEmployeeByEmail string = `SELECT email, full_name, code, gender, phone, dob FROM employees WHERE email = $1`
+var getEmployeeBy string = `SELECT email, full_name, code, gender, phone, dob FROM employees `
 
 var deleteEmployee string = `DELETE FROM employees WHERE email = $1`
 
@@ -60,5 +58,3 @@ var sumWorkingTime string = `
 	INNER JOIN level_defaults ld ON ld.level_id = l.Id
 	WHERE EXTRACT(MONTH FROM p.created_time) = $1
 	GROUP BY ld.amount, e.full_name;`
-
-var s = ``
