@@ -11,7 +11,7 @@ import (
 )
 
 type EmployeeRepository interface {
-	Create(input []cli.AddEmployee) (bool, error)
+	Create(input []cli.AddEmployee) (uuid.UUID, bool, error)
 	GetID(email string) (uuid.UUID, error)
 	GetByInput(input string, filter string) (cli.EmployeeDTO, error)
 	GetAll() ([]cli.EmployeeDTO, error)
@@ -28,7 +28,8 @@ func InitEmployeeRepo(db *sql.DB) EmployeeRepository {
 	}
 }
 
-func (er *employeeRepo) Create(input []cli.AddEmployee) (bool, error) {
+func (er *employeeRepo) Create(input []cli.AddEmployee) (uuid.UUID, bool, error) {
+	var result uuid.UUID
 	values := []string{}
 	args := []interface{}{}
 	argPos := 1
@@ -56,28 +57,25 @@ func (er *employeeRepo) Create(input []cli.AddEmployee) (bool, error) {
 
 	query := fmt.Sprintf(createEmployee, strings.Join(values, ","))
 
-	query += "ON CONFLICT (email) DO NOTHING" // Add confict query will do nothing when conflict email import
-
 	// Thực thi query
-	res, err := er.db.Exec(query, args...)
+	row, err := er.db.Query(query, args...)
 	if err != nil {
 		log.Printf("Error executing query: %v", err)
-		return false, err
+		return result, false, err
 	}
 
-	affected, err := res.RowsAffected()
-	if err != nil {
-		log.Printf("Error getting rows affected: %v", err)
-		return false, err
+	defer row.Close()
+
+	for row.Next() {
+		err := row.Scan(&result)
+
+		if err != nil {
+			return result, false, err
+		}
 	}
 
-	if affected == 0 {
-		log.Println("No rows affected")
-		return false, nil // hoặc error tùy yêu cầu
-	}
-
-	log.Printf("[SQL RESULT] rows_affected=%d", affected)
-	return true, nil
+	log.Printf("[SQL RESULT] rows_affected=%d", 1)
+	return result, true, nil
 }
 
 func (er *employeeRepo) GetID(email string) (uuid.UUID, error) {

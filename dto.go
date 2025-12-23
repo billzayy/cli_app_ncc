@@ -48,3 +48,16 @@ type TimeAndAmount struct {
 	WorkingTime int
 	Amount      int
 }
+
+type GetRoleInfo struct {
+	Id   uuid.UUID
+	Name string
+}
+
+type AssignEmployeeRoleDTO struct {
+	EmployeeId uuid.UUID
+	LevelId    uuid.UUID
+	PositionId uuid.UUID
+	BranchId   uuid.UUID
+	CreatedBy  uuid.UUID
+}

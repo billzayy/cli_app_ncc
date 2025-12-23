@@ -8,7 +8,7 @@ var createBranch string = `INSERT INTO branches(name,created_by) VALUES($1,$2)`
 
 var createEmployee string = `
 	INSERT INTO employees(email, full_name, code, dob, phone, gender, created_by) 
-	VALUES %s `
+	VALUES %s ON CONFLICT (email) DO NOTHING RETURNING id`
 
 var getIdEmployee string = `SELECT id from employees WHERE email = $1`
 
@@ -58,3 +58,13 @@ var sumWorkingTime string = `
 	INNER JOIN level_defaults ld ON ld.level_id = l.Id
 	WHERE EXTRACT(MONTH FROM p.created_time) = $1
 	GROUP BY ld.amount, e.full_name;`
+
+var getLevelInfo string = `SELECT id, name FROM levels`
+var getPositionInfo string = `SELECT id, name FROM positions`
+var getBranchesInfo string = `SELECT id, name FROM branches`
+
+var addLevelsInfo string = `INSERT INTO levels (name, created_by) VALUES($1,$2)`
+var addPositionsInfo string = `INSERT INTO positions (name, created_by) VALUES($1,$2)`
+var addBranchesInfo string = `INSERT INTO branches (name, created_by) VALUES($1,$2)`
+
+var assignEmployeRole string = `INSERT INTO employees_roles(employee_id, level_id, position_id, branch_id, created_by) VALUES($1, $2, $3, $4, $5)`

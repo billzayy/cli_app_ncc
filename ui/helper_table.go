@@ -13,10 +13,12 @@ import (
 
 func selectEmployee(s *services.EmployeeService) string {
 	columns := []table.Column{
-		{Title: "ID", Width: 36},
 		{Title: "Email", Width: 25},
 		{Title: "Full Name", Width: 20},
 		{Title: "Code", Width: 10},
+		{Title: "Gender", Width: 10},
+		{Title: "Phone", Width: 11},
+		{Title: "Dob", Width: 20},
 	}
 
 	emps, err := s.GetAllEmployees()
@@ -30,8 +32,15 @@ func selectEmployee(s *services.EmployeeService) string {
 	}
 
 	rows := employeesToTableRows(emps)
-	selectedID := components.Table(columns, rows)
-	return selectedID
+	email := components.Table(columns, rows)
+
+	id, err := s.GetEmployeeId(email)
+
+	if err != nil {
+		return ""
+	}
+
+	return id.String()
 }
 
 func selectProject(p *services.ProjectService) string {
@@ -80,6 +89,28 @@ func selectTask(p *services.ProjectService) string {
 	return selectedID
 }
 
+func selectRole(roleType string, r *services.RoleService) string {
+	columns := []table.Column{
+		{Title: "ID", Width: 36},
+		{Title: "Name", Width: 30},
+	}
+
+	roleList, err := r.GetRoleInfo(roleType)
+
+	if err != nil {
+		fmt.Printf("Error loading tasks: %v\n", err)
+		return ""
+	}
+	if len(roleList) == 0 {
+		fmt.Println("No tasks available.")
+		return ""
+	}
+
+	rows := employeeRoleToTableRows(roleList)
+	selectedID := components.Table(columns, rows)
+	return selectedID
+}
+
 func tasksToTableRows(tasks []cli.Tasks) []table.Row {
 	rows := make([]table.Row, len(tasks))
 	for i, t := range tasks {
@@ -118,5 +149,17 @@ func projectsToTableRows(projs []cli.Projects) []table.Row {
 			strconv.Itoa(p.WorkingTime),
 		}
 	}
+	return rows
+}
+
+func employeeRoleToTableRows(role []cli.GetRoleInfo) []table.Row {
+	rows := make([]table.Row, len(role))
+	for i, p := range role {
+		rows[i] = table.Row{
+			p.Id.String(),
+			p.Name,
+		}
+	}
+
 	return rows
 }

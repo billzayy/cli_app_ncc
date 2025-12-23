@@ -6,28 +6,25 @@ import (
 )
 
 type InputCreateEmployee struct {
-	Email           string `json:"email"`
-	FullName        string `json:"full_name"`
-	Code            string `json:"code"`
-	Gender          string `json:"gender"`
-	Phone           string `json:"phone"`
-	Dob             string `json:"dob"`
-	Origin          string `json:"origin"`
-	Residence       string `json:"residence"`
-	CurrentLocation string `json:"current_location"`
+	Email    string `json:"email"`
+	FullName string `json:"full_name"`
+	Code     string `json:"code"`
+	Gender   string `json:"gender"`
+	Phone    string `json:"phone"`
+	Dob      string `json:"dob"`
 }
 
 type AddEmployee struct {
-	Email           string    `json:"email"`
-	FullName        string    `json:"full_name"`
-	Code            string    `json:"code"`
-	Gender          string    `json:"gender"`
-	Phone           string    `json:"phone"`
-	Dob             time.Time `json:"dob"`
-	Origin          string    `json:"origin"`
-	Residence       string    `json:"residence"`
-	CurrentLocation string    `json:"current_location"`
-	CreatedBy       uuid.UUID `json:"created_by"`
+	Email      string    `json:"email"`
+	FullName   string    `json:"full_name"`
+	Code       string    `json:"code"`
+	Gender     string    `json:"gender"`
+	Phone      string    `json:"phone"`
+	Dob        time.Time `json:"dob"`
+	LevelId    string    `json:"levelId"`
+	PositionId string
+	BranchId   string
+	CreatedBy  uuid.UUID `json:"created_by"`
 }
 
 type InputAddProject struct {

@@ -15,6 +15,9 @@ func readInt(prompt string, max int) int {
 			fmt.Printf("Invalid input. Please enter a number between 1 and %d\n", max)
 			continue
 		}
+		// ← ADD THIS: consume the leftover newline
+		var newline string
+		fmt.Scanln(&newline)
 		return input
 	}
 }
