@@ -9,7 +9,9 @@ import (
 
 func MenuSalary(empSvc *services.EmployeeService, salSvc *services.SalaryService, currentUserID *uuid.UUID) {
 	options := []string{
-		"Calculate Salary for a Month",
+		"Calculate salary for a month",
+		"Calculate salary for a quater",
+		"Calculate salary from CSV",
 		"Export Salary to CSV",
 		"Back to Main Menu",
 	}
@@ -20,7 +22,7 @@ func MenuSalary(empSvc *services.EmployeeService, salSvc *services.SalaryService
 			fmt.Printf("%d. %s\n", i+1, opt)
 		}
 
-		choice := readInt("Choose an option (1-%d): ", len(options))
+		choice := readInt("Choose an option (1-3): ", len(options))
 		if choice == 0 {
 			continue
 		}
