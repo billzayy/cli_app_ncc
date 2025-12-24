@@ -5,7 +5,6 @@ import (
 	"cli-app/components"
 	"cli-app/services"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
@@ -57,12 +56,11 @@ func viewAllAssignmentsFlow(projSvc *services.ProjectService) {
 		{Title: "Employee", Width: 20},
 		{Title: "Project", Width: 15},
 		{Title: "Roles", Width: 10},
-		{Title: "Working Time", Width: 12},
 	}
 
 	rows := make([]table.Row, len(assignments))
 	for i, a := range assignments {
-		rows[i] = table.Row{a.EmployeeName, a.Project, a.Role, strconv.Itoa(a.WorkingTime)}
+		rows[i] = table.Row{a.EmployeeName, a.Project, a.Role}
 	}
 
 	fmt.Println("\nCurrent Project Assignments:")
@@ -70,12 +68,14 @@ func viewAllAssignmentsFlow(projSvc *services.ProjectService) {
 }
 
 func removeMemberFlow(eSvc *services.EmployeeService, projSvc *services.ProjectService) error {
-	eId, pId := showTableEP(eSvc, projSvc)
+	eId := selectEmployee(eSvc)
 
 	empID, err := uuid.Parse(strings.TrimSpace(eId))
 	if err != nil {
 		return fmt.Errorf("invalid employee ID: %w", err)
 	}
+
+	pId := selectProject(projSvc)
 	projID, err := uuid.Parse(strings.TrimSpace(pId))
 	if err != nil {
 		return fmt.Errorf("invalid project ID: %w", err)

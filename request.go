@@ -27,22 +27,22 @@ type AddEmployee struct {
 	CreatedBy  uuid.UUID `json:"created_by"`
 }
 
-type InputAddProject struct {
-	Name        string `json:"name"`
-	Notes       string `json:"notes"`
-	WorkingTime string `json:"working_time"`
+type AddProject struct {
+	Name      string    `json:"name"`
+	CreatedBy uuid.UUID `json:"created_by"`
 }
 
-type AddProject struct {
-	Name        string    `json:"name"`
-	Notes       string    `json:"notes"`
-	WorkingTime int       `json:"working_time"`
-	CreatedBy   uuid.UUID `json:"created_by"`
+type InputAddTask struct {
+	Name        string `json:"name"`
+	Notes       string `json:"notes"`
+	WorkingTime string `json:"workingTime"`
 }
 
 type AddTask struct {
-	Name      string    `json:"name"`
-	CreatedBy uuid.UUID `json:"created_by"`
+	Name        string    `json:"name"`
+	Notes       string    `json:"notes"`
+	WorkingTime int       `json:"workingTime"`
+	CreatedBy   uuid.UUID `json:"created_by"`
 }
 
 type AssignEmployeeProject struct {

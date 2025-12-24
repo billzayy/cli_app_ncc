@@ -30,7 +30,7 @@ func MenuProject(empSvc *services.EmployeeService, projSvc *services.ProjectServ
 		case 1:
 			projectsFlow(projSvc, *currentUserID)
 		case 2:
-			fmt.Println("Tasks Management - Still working on it...")
+			MenuTask(empSvc, projSvc, currentUserID)
 		case 3:
 			MenuMember(empSvc, projSvc, currentUserID)
 		case 4:

@@ -1,11 +1,12 @@
 package ui
 
 import (
+	"bufio"
 	"fmt"
-	"strconv"
+	"os"
+	"strings"
 
 	cli "cli-app"
-	"cli-app/components"
 	"cli-app/services"
 
 	"github.com/google/uuid"
@@ -54,12 +55,15 @@ func projectsFlow(projSvc *services.ProjectService, createdBy uuid.UUID) {
 }
 
 func handleCreateProject(projSvc *services.ProjectService, createdBy uuid.UUID) error {
-	titles := []string{"Name", "Notes", "Working Time (hours)"}
-	input := components.TextInput[cli.InputAddProject](titles)
+	name, err := inputName("project")
 
-	project, err := convertToAddProject(input, createdBy)
 	if err != nil {
-		return fmt.Errorf("invalid input: %w", err)
+		return nil
+	}
+
+	project := cli.AddProject{
+		Name:      name,
+		CreatedBy: createdBy,
 	}
 
 	if err := validateAddProject(project); err != nil {
@@ -67,24 +71,6 @@ func handleCreateProject(projSvc *services.ProjectService, createdBy uuid.UUID) 
 	}
 
 	return projSvc.Create(project)
-}
-
-func convertToAddProject(in cli.InputAddProject, createdBy uuid.UUID) (cli.AddProject, error) {
-	workingTime, err := strconv.Atoi(in.WorkingTime)
-	if err != nil {
-		return cli.AddProject{}, fmt.Errorf("working time must be a valid number: %w", err)
-	}
-
-	if workingTime < 0 {
-		return cli.AddProject{}, fmt.Errorf("working time cannot be negative")
-	}
-
-	return cli.AddProject{
-		Name:        in.Name,
-		Notes:       in.Notes,
-		WorkingTime: workingTime,
-		CreatedBy:   createdBy,
-	}, nil
 }
 
 func validateAddProject(p cli.AddProject) error {
@@ -108,9 +94,22 @@ func handleListProjects(projSvc *services.ProjectService) {
 
 	fmt.Println("\n=== Your Projects ===")
 	for _, p := range projects {
-		fmt.Printf("- %s (Working Time: %d hours)\n  Notes: %s\n \n\n",
-			p.Name, p.WorkingTime, p.Notes)
+		fmt.Printf("- %s \n\n", p.Name)
 	}
+}
+
+func inputName(typeName string) (string, error) {
+	reader := bufio.NewReader(os.Stdin)
+	fmt.Printf("Input new %s name (or empty to cancel): ", typeName)
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+	name := strings.TrimSpace(input)
+	if name == "" {
+		fmt.Println("Cancelled.")
+	}
+	return name, nil
 }
 
 // handleDeleteProject lets user delete a project by ID or name

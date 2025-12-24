@@ -30,6 +30,10 @@ type EmployeeDTO struct {
 }
 
 type ProjectDTO struct {
+	Name string
+}
+
+type TaskDTO struct {
 	Name        string
 	Notes       string
 	WorkingTime int
@@ -41,7 +45,6 @@ type GetEmployeesProject struct {
 	EmployeeName string
 	Project      string
 	Role         string
-	WorkingTime  int
 }
 
 type GetTaskProject struct {

@@ -16,9 +16,9 @@ var getEmployeeBy string = `SELECT email, full_name, code, gender, phone, dob FR
 
 var deleteEmployee string = `DELETE FROM employees WHERE email = $1`
 
-var createProject string = `INSERT INTO projects(name, notes, working_time, created_by) VALUES($1, $2, $3, $4)`
+var createProject string = `INSERT INTO projects(name, created_by) VALUES($1, $2)`
 
-var getAllProjects string = `SELECT name, notes, working_time FROM projects`
+var getAllProjects string = `SELECT name FROM projects`
 
 var getProjectIdByName string = `SELECT id FROM projects WHERE name = $1`
 
@@ -27,15 +27,15 @@ var deleteProject string = `DELETE FROM projects WHERE id =  $1`
 var assignProject string = `INSERT INTO employees_projects(project_id, employee_id, roles, created_by) VALUES($1,$2,$3,$4)`
 
 var getAssignProject string = `
-	SELECT ep.employee_id, ep.project_id, e.full_name, p.Name, ep.Roles, p.Working_Time FROM employees e 
+	SELECT ep.employee_id, ep.project_id, e.full_name, p.Name, ep.Roles FROM employees e 
 	INNER JOIN employees_projects ep ON ep.employee_id = e.Id 
 	INNER JOIN projects p ON ep.project_id = p.Id `
 
 var deleteAssignProject string = `DELETE FROM employees_projects WHERE project_id = $1 AND employee_id = $2`
 
-var createTasks string = `INSERT INTO tasks(name, created_by) VALUES($1, $2)`
+var createTasks string = `INSERT INTO tasks(name, notes, working_time, created_by) VALUES($1, $2, $3, $4) RETURNING id`
 
-var getAllTasks string = `SELECT * FROM tasks`
+var getAllTasks string = `SELECT name, notes, working_time FROM tasks`
 
 var deleteTasks string = `DELETE FROM tasks WHERE id = $1`
 
@@ -50,13 +50,14 @@ var getTaskToProject string = `
 var deleteTaskToProject string = `DELETE FROM projects_tasks WHERE employee_id = $1 AND project_id = $2`
 
 var sumWorkingTime string = `
-	SELECT e.full_name ,sum(p.working_time), ld.amount FROM employees_projects ep 
+	SELECT e.full_name ,sum(p.working_time) AS sum_working_time, ld.amount as default_salary, $1 AS MONTH 
+	FROM employees_projects ep 
 	INNER JOIN projects p ON p.Id = ep.project_id 
 	INNER JOIN employees e ON e.Id = ep.employee_id 
 	INNER JOIN employees_roles er ON e.Id = er.employee_id
 	INNER JOIN levels l ON l.Id = er.level_id
 	INNER JOIN level_defaults ld ON ld.level_id = l.Id
-	WHERE EXTRACT(MONTH FROM p.created_time) = $1
+	WHERE EXTRACT(MONTH FROM p.created_time) = $1 AND e.full_name IN (%s)
 	GROUP BY ld.amount, e.full_name;`
 
 var getLevelInfo string = `SELECT id, name FROM levels`

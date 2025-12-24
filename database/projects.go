@@ -19,8 +19,8 @@ type ProjectRepository interface {
 	GetAssignedEmployees() ([]cli.GetEmployeesProject, error)
 	UnassignEmployee(projectID, employeeID uuid.UUID) error
 
-	CreateTask(name string, createdBy uuid.UUID) error
-	GetAllTasks() ([]cli.Tasks, error)
+	CreateTask(in cli.AddTask) (uuid.UUID, error)
+	GetAllTasks() ([]cli.TaskDTO, error)
 	DeleteTask(id uuid.UUID) error
 
 	AssignTaskToProject(in cli.AssignTaskProject) error
@@ -39,8 +39,6 @@ func InitProjectRepo(db *sql.DB) ProjectRepository {
 func (r *projectRepo) Create(in cli.AddProject) error {
 	row, err := r.db.Exec(createProject,
 		in.Name,
-		in.Notes,
-		in.WorkingTime,
 		in.CreatedBy,
 	)
 	if err != nil {
@@ -69,7 +67,7 @@ func (pr *projectRepo) GetAll() ([]cli.ProjectDTO, error) {
 	for rows.Next() {
 		var temp cli.ProjectDTO
 		err := rows.Scan(
-			&temp.Name, &temp.Notes, &temp.WorkingTime)
+			&temp.Name)
 
 		if err != nil {
 			return result, err
@@ -162,7 +160,7 @@ func (pr *projectRepo) GetAssignedEmployees() ([]cli.GetEmployeesProject, error)
 	var temp cli.GetEmployeesProject
 
 	for rows.Next() {
-		err := rows.Scan(&temp.EmployeeId, &temp.ProjectId, &temp.EmployeeName, &temp.Project, &temp.Role, &temp.WorkingTime)
+		err := rows.Scan(&temp.EmployeeId, &temp.ProjectId, &temp.EmployeeName, &temp.Project, &temp.Role)
 
 		if err != nil {
 			return result, err
@@ -196,40 +194,47 @@ func (pr *projectRepo) UnassignEmployee(projectId uuid.UUID, employeeId uuid.UUI
 	return nil
 }
 
-func (pr *projectRepo) CreateTask(nameTask string, id uuid.UUID) error {
-	row, err := pr.db.Exec(createTasks, nameTask, id)
+func (pr *projectRepo) CreateTask(in cli.AddTask) (uuid.UUID, error) {
+	rows, err := pr.db.Query(createTasks, in.Name, in.Notes, in.WorkingTime, in.CreatedBy)
 
 	if err != nil {
-		return err
+		return uuid.UUID{}, err
 	}
 
-	affected, err := row.RowsAffected()
+	defer rows.Close()
 
-	if err != nil {
-		return err
+	var id uuid.UUID
+
+	for rows.Next() {
+		var temp string
+		err := rows.Scan(&temp)
+
+		if err != nil {
+			return uuid.UUID{}, err
+		}
+
+		id = uuid.MustParse(temp)
 	}
 
-	if affected == 0 {
-		return fmt.Errorf("create task failed")
+	if id == uuid.Nil {
 	}
-	log.Printf("[SQL RESULT] rows_affected=%d", affected)
 
-	return nil
+	return id, nil
 }
 
-func (pr *projectRepo) GetAllTasks() ([]cli.Tasks, error) {
+func (pr *projectRepo) GetAllTasks() ([]cli.TaskDTO, error) {
 	rows, err := pr.db.Query(getAllTasks)
 
 	if err != nil {
-		return []cli.Tasks{}, err
+		return []cli.TaskDTO{}, err
 	}
 	defer rows.Close()
 
-	var result []cli.Tasks
-	var temp cli.Tasks
+	var result []cli.TaskDTO
 
 	for rows.Next() {
-		err := rows.Scan(&temp.Id, &temp.Name, &temp.CreatedTime, &temp.CreatedBy)
+		var temp cli.TaskDTO
+		err := rows.Scan(&temp.Name, &temp.Notes, &temp.WorkingTime)
 
 		if err != nil {
 			return result, err

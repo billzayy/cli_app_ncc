@@ -1,12 +1,9 @@
 package ui
 
 import (
-	"bufio"
 	cli "cli-app"
 	"cli-app/services"
 	"fmt"
-	"os"
-	"strings"
 
 	"github.com/google/uuid"
 )
@@ -32,7 +29,7 @@ func addRoleInfoFlow(s *services.RoleService, createdBy uuid.UUID) error {
 
 		switch choice {
 		case 1:
-			name, err := inputNameRole("levels")
+			name, err := inputName("levels")
 
 			if err != nil {
 				continue
@@ -45,7 +42,7 @@ func addRoleInfoFlow(s *services.RoleService, createdBy uuid.UUID) error {
 			fmt.Println("Level role created successfully!")
 			return nil
 		case 2:
-			name, err := inputNameRole("positions")
+			name, err := inputName("positions")
 
 			if err != nil {
 				continue
@@ -58,7 +55,7 @@ func addRoleInfoFlow(s *services.RoleService, createdBy uuid.UUID) error {
 			fmt.Println("Position role created successfully!")
 			return nil
 		case 3:
-			name, err := inputNameRole("branches")
+			name, err := inputName("branches")
 
 			if err != nil {
 				continue
@@ -172,18 +169,4 @@ func assignEmployeeRoleFlow(empSvc *services.EmployeeService, rolSvc *services.R
 	}
 
 	return nil
-}
-
-func inputNameRole(typeName string) (string, error) {
-	reader := bufio.NewReader(os.Stdin)
-	fmt.Printf("Input new %s name (or empty to cancel): ", typeName)
-	input, err := reader.ReadString('\n')
-	if err != nil {
-		return "", err
-	}
-	name := strings.TrimSpace(input)
-	if name == "" {
-		fmt.Println("Cancelled.")
-	}
-	return name, nil
 }

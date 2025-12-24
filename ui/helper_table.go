@@ -9,6 +9,7 @@ import (
 	"strconv"
 
 	"github.com/charmbracelet/bubbles/table"
+	"github.com/google/uuid"
 )
 
 func selectEmployee(s *services.EmployeeService) string {
@@ -46,8 +47,6 @@ func selectEmployee(s *services.EmployeeService) string {
 func selectProject(p *services.ProjectService) string {
 	columns := []table.Column{
 		{Title: "Name", Width: 20},
-		{Title: "Notes", Width: 20},
-		{Title: "Working Time", Width: 12},
 	}
 
 	projects, err := p.GetAll()
@@ -67,6 +66,12 @@ func selectProject(p *services.ProjectService) string {
 
 	if err != nil {
 		fmt.Println(err)
+		return ""
+	}
+
+	if projectId == uuid.Nil {
+		fmt.Println("Project not found")
+		return ""
 	}
 
 	return projectId.String()
@@ -117,14 +122,14 @@ func selectRole(roleType string, r *services.RoleService) string {
 	return selectedID
 }
 
-func tasksToTableRows(tasks []cli.Tasks) []table.Row {
+func tasksToTableRows(tasks []cli.TaskDTO) []table.Row {
+
 	rows := make([]table.Row, len(tasks))
 	for i, t := range tasks {
 		rows[i] = table.Row{
-			t.Id.String(),
 			t.Name,
-			t.CreatedTime.Format("2006-01-02 15:04"),
-			t.CreatedBy.String(),
+			t.Notes,
+			strconv.Itoa(t.WorkingTime),
 		}
 	}
 	return rows
@@ -150,8 +155,6 @@ func projectsToTableRows(projs []cli.ProjectDTO) []table.Row {
 	for i, p := range projs {
 		rows[i] = table.Row{
 			p.Name,
-			p.Notes,
-			strconv.Itoa(p.WorkingTime),
 		}
 	}
 	return rows
