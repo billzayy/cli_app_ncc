@@ -17,7 +17,7 @@ func createEmployeeFlow(s *services.EmployeeService, rolSvc *services.RoleServic
 
 	input := components.TextInput[cli.InputCreateEmployee](fields)
 
-	addEmp, err := convertToAddEmployee(input, rolSvc, createdBy)
+	addEmp, err := convertToAddEmployee(input, createdBy)
 
 	if err != nil {
 		return fmt.Errorf("invalid date of birth: %w", err)
@@ -57,7 +57,7 @@ func createEmployeeFlow(s *services.EmployeeService, rolSvc *services.RoleServic
 	return nil
 }
 
-func convertToAddEmployee(in cli.InputCreateEmployee, rolSvc *services.RoleService, createdBy uuid.UUID) (cli.AddEmployee, error) {
+func convertToAddEmployee(in cli.InputCreateEmployee, createdBy uuid.UUID) (cli.AddEmployee, error) {
 	const layout = "02-01-2006"
 
 	dob, err := time.Parse(layout, strings.TrimSpace(in.Dob))
@@ -179,7 +179,6 @@ func readAllEmployeesFlow(s *services.EmployeeService) {
 				"Code: " + e.Code,
 				"Phone: " + e.Phone,
 				"Gender: " + string(e.Gender),
-				"DOB: " + e.Dob.Format("2006-01-02"),
 			}, " | ")
 		},
 		components.WithPerPage(8),
