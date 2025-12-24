@@ -5,21 +5,67 @@ import (
 	"cli-app/components"
 	"cli-app/services"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/table"
 	"github.com/google/uuid"
 )
 
-func createTaskFlow(p *services.ProjectService, createdBy uuid.UUID) error {
-	var name string
-	fmt.Print("Enter task name: ")
-	fmt.Scanln(&name)
-	name = strings.TrimSpace(name)
-	if name == "" {
-		return fmt.Errorf("task name cannot be empty")
+func createTaskFlow(e *services.EmployeeService, p *services.ProjectService, createdBy uuid.UUID) error {
+	titles := []string{
+		"Name", "Notes", "Working Time",
 	}
-	return p.CreateTask(name, createdBy)
+
+	in := components.TextInput[cli.InputAddTask](titles)
+
+	timeInt, err := strconv.Atoi(in.WorkingTime)
+
+	if err != nil {
+		return err
+	}
+
+	converted := cli.AddTask{
+		Name:        in.Name,
+		Notes:       in.Notes,
+		WorkingTime: timeInt,
+		CreatedBy:   createdBy,
+	}
+
+	taskId, err := p.CreateTask(converted)
+
+	if err != nil {
+		return err
+	}
+
+	eId := selectEmployee(e)
+
+	empID, err := uuid.Parse(strings.TrimSpace(eId))
+	if err != nil {
+		return fmt.Errorf("invalid employee ID: %w", err)
+	}
+
+	pId := selectProject(p)
+
+	projID, err := uuid.Parse(strings.TrimSpace(pId))
+	if err != nil {
+		return fmt.Errorf("invalid project ID: %w", err)
+	}
+
+	assign := cli.AssignTaskProject{
+		EmployeeId: empID,
+		ProjectId:  projID,
+		TaskId:     taskId,
+		CreatedBy:  createdBy,
+	}
+
+	err = p.AssignTaskProject(assign)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func listAllTasksFlow(p *services.ProjectService) {
@@ -34,10 +80,9 @@ func listAllTasksFlow(p *services.ProjectService) {
 	}
 
 	columns := []table.Column{
-		{Title: "ID", Width: 36},
-		{Title: "Name", Width: 25},
-		{Title: "Created At", Width: 20},
-		{Title: "Created By", Width: 36},
+		{Title: "Name", Width: 10},
+		{Title: "Notes", Width: 20},
+		{Title: "Working Time", Width: 12},
 	}
 
 	rows := tasksToTableRows(tasks)
@@ -88,7 +133,6 @@ func viewTaskAssignmentsFlow(p *services.ProjectService) {
 		return
 	}
 
-	// Assuming GetTaskProject() returns a slice with fields like EmployeeName, ProjectName, TaskName
 	columns := []table.Column{
 		{Title: "Employee", Width: 20},
 		{Title: "Project", Width: 20},

@@ -15,6 +15,7 @@ type App struct {
 	empSvc  *services.EmployeeService
 	projSvc *services.ProjectService
 	salSvc  *services.SalaryService
+	rolSvc  *services.RoleService
 }
 
 func NewApp(db *sql.DB) *App {
@@ -23,6 +24,7 @@ func NewApp(db *sql.DB) *App {
 		empSvc:  services.NewEmployeeService(database.InitEmployeeRepo(db)),
 		projSvc: services.NewProjectService(database.InitProjectRepo(db)),
 		salSvc:  services.NewSalaryService(database.InitSalaryRepo(db)),
+		rolSvc:  services.NewRoleService(database.InitRoleRepo(db)),
 	}
 }
 
@@ -54,7 +56,7 @@ func (a *App) Run() error {
 		case 2:
 			a.ShowAdditionMenu()
 		case 3:
-			a.ShowRoleMenu()
+			a.ShowRoleMenu(globalId)
 		case 4:
 			a.ShowProjectMenu(globalId)
 		case 5:
@@ -122,15 +124,15 @@ func (a *App) promptEmployeeID() (uuid.UUID, error) {
 }
 
 func (a *App) ShowEmployeeMenu(employeeID uuid.UUID) {
-	MenuEmployee(a.empSvc, employeeID)
+	MenuEmployee(a.empSvc, a.rolSvc, employeeID)
 }
 
 func (a *App) ShowAdditionMenu() {
 	fmt.Println("Additional Employee menu - Still working on it...")
 }
 
-func (a *App) ShowRoleMenu() {
-	fmt.Println("Roles menu - Still working on it...")
+func (a *App) ShowRoleMenu(employeeID uuid.UUID) {
+	MenuRole(a.empSvc, a.rolSvc, employeeID)
 }
 
 func (a *App) ShowProjectMenu(employeeID uuid.UUID) {

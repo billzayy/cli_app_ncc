@@ -10,9 +10,9 @@ import (
 func MenuTask(empSvc *services.EmployeeService, projSvc *services.ProjectService, currentUserID *uuid.UUID) {
 	options := []string{
 		"Create New Task",
-		"Read Task (by ID)", // Optional future
+		"Read Task (by ID)",
 		"List All Tasks",
-		"Update Task", // WIP
+		"Update Task",
 		"Delete Task",
 		"Assign Task to Employee + Project",
 		"View All Task Assignments",
@@ -33,7 +33,7 @@ func MenuTask(empSvc *services.EmployeeService, projSvc *services.ProjectService
 
 		switch choice {
 		case 1:
-			if err := createTaskFlow(projSvc, *currentUserID); err != nil {
+			if err := createTaskFlow(empSvc, projSvc, *currentUserID); err != nil {
 				fmt.Printf("Failed to create task: %v\n", err)
 			} else {
 				fmt.Println("✓ Task created successfully!")

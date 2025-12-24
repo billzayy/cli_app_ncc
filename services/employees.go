@@ -20,15 +20,15 @@ func NewEmployeeService(er database.EmployeeRepository) *EmployeeService {
 	}
 }
 
-func (es EmployeeService) CreateEmployee(in []cli.AddEmployee) error {
-	_, err := es.repo.Create(in)
+func (es EmployeeService) CreateEmployee(in []cli.AddEmployee) (uuid.UUID, error) {
+	id, _, err := es.repo.Create(in)
 
 	if err != nil {
-
 		fmt.Printf("err existed: %e", err)
+		return id, err
 	}
 
-	return nil
+	return id, nil
 }
 
 func (es EmployeeService) GetEmployeeId(email string) (uuid.UUID, error) {
@@ -149,9 +149,11 @@ func (es *EmployeeService) ImportEmployee(filePath string, importedBy uuid.UUID)
 		listInput = append(listInput, in)
 	}
 
-	if err = es.CreateEmployee(listInput); err != nil {
+	_, _, err = es.repo.Create(listInput)
+
+	if err != nil {
 		fmt.Printf("err existed: %e", err)
-		// return fmt.Errorf("failed to import row %d (email: %s): %w", i+2, email, err)
 	}
+
 	return nil
 }

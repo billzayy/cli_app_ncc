@@ -9,7 +9,7 @@ import (
 
 const employeeCSVPath = "./csv/employees.csv"
 
-func MenuEmployee(s *services.EmployeeService, currentUserID uuid.UUID) {
+func MenuEmployee(s *services.EmployeeService, rolSvc *services.RoleService, currentUserID uuid.UUID) {
 	options := []string{
 		"Create New Employee",
 		"Read Employee",
@@ -34,7 +34,7 @@ func MenuEmployee(s *services.EmployeeService, currentUserID uuid.UUID) {
 
 		switch choice {
 		case 1:
-			if err := createEmployeeFlow(s, currentUserID); err != nil {
+			if err := createEmployeeFlow(s, rolSvc, currentUserID); err != nil {
 				fmt.Printf("Failed to create employee: %v\n", err)
 			} else {
 				fmt.Println("✓ New employee created successfully!")

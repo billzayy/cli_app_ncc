@@ -11,27 +11,53 @@ import (
 	"github.com/google/uuid"
 )
 
-func createEmployeeFlow(s *services.EmployeeService, createdBy uuid.UUID) error {
+func createEmployeeFlow(s *services.EmployeeService, rolSvc *services.RoleService, createdBy uuid.UUID) error {
 	fields := []string{
-		"Email", "FullName", "Code", "Gender", "Phone", "Dob (DD-MM-YYYY)",
-		"Origin", "Residence", "CurrentLocation",
-	}
+		"Email", "FullName", "Code", "Gender", "Phone", "Dob (DD-MM-YYYY)"}
 
 	input := components.TextInput[cli.InputCreateEmployee](fields)
 
-	addEmp, err := convertToAddEmployee(input, createdBy)
+	addEmp, err := convertToAddEmployee(input, rolSvc, createdBy)
 
 	if err != nil {
 		return fmt.Errorf("invalid date of birth: %w", err)
 	}
 
+	levelId := selectRole("levels", rolSvc)
+	positionId := selectRole("positions", rolSvc)
+	branchId := selectRole("branches", rolSvc)
+
+	addEmp.LevelId = levelId
+	addEmp.PositionId = positionId
+	addEmp.BranchId = branchId
+
 	var listInput []cli.AddEmployee
 	listInput = append(listInput, addEmp)
 
-	return s.CreateEmployee(listInput)
+	id, err := s.CreateEmployee(listInput)
+
+	if err != nil {
+		return err
+	}
+
+	assignRole := cli.AssignEmployeeRoleDTO{
+		EmployeeId: id,
+		LevelId:    uuid.MustParse(levelId),
+		PositionId: uuid.MustParse(positionId),
+		BranchId:   uuid.MustParse(branchId),
+		CreatedBy:  createdBy,
+	}
+
+	err = rolSvc.AssignEmployeeRole(assignRole)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func convertToAddEmployee(in cli.InputCreateEmployee, createdBy uuid.UUID) (cli.AddEmployee, error) {
+func convertToAddEmployee(in cli.InputCreateEmployee, rolSvc *services.RoleService, createdBy uuid.UUID) (cli.AddEmployee, error) {
 	const layout = "02-01-2006"
 
 	dob, err := time.Parse(layout, strings.TrimSpace(in.Dob))
@@ -41,16 +67,13 @@ func convertToAddEmployee(in cli.InputCreateEmployee, createdBy uuid.UUID) (cli.
 	}
 
 	return cli.AddEmployee{
-		Email:           strings.TrimSpace(in.Email),
-		FullName:        strings.TrimSpace(in.FullName),
-		Code:            strings.TrimSpace(in.Code),
-		Gender:          strings.TrimSpace(in.Gender),
-		Phone:           strings.TrimSpace(in.Phone),
-		Dob:             dob,
-		Origin:          strings.TrimSpace(in.Origin),
-		Residence:       strings.TrimSpace(in.Residence),
-		CurrentLocation: strings.TrimSpace(in.CurrentLocation),
-		CreatedBy:       createdBy,
+		Email:     strings.TrimSpace(in.Email),
+		FullName:  strings.TrimSpace(in.FullName),
+		Code:      strings.TrimSpace(in.Code),
+		Gender:    strings.TrimSpace(in.Gender),
+		Phone:     strings.TrimSpace(in.Phone),
+		Dob:       dob,
+		CreatedBy: createdBy,
 	}, nil
 }
 

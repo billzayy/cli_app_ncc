@@ -27,23 +27,18 @@ func (ps *ProjectService) Create(in cli.AddProject) error {
 	return ps.repo.Create(in)
 }
 
-func (ps *ProjectService) GetAll() ([]cli.Projects, error) {
+func (ps *ProjectService) GetAll() ([]cli.ProjectDTO, error) {
 	return ps.repo.GetAll()
 }
 
-func (ps *ProjectService) GetById(id uuid.UUID) (cli.Projects, error) {
-	if id == uuid.Nil {
-		return cli.Projects{}, fmt.Errorf("project ID cannot be nil")
+func (ps *ProjectService) GetIdByName(name string) (uuid.UUID, error) {
+	if strings.TrimSpace(name) == "" {
+		return uuid.UUID{}, fmt.Errorf("name is empty")
 	}
-
-	result, err := ps.repo.GetByID(id)
+	result, err := ps.repo.GetIdByName(name)
 
 	if err != nil {
-		return cli.Projects{}, err
-	}
-
-	if result.Id == uuid.Nil {
-		return cli.Projects{}, fmt.Errorf("project not found with ID: %s", id)
+		return result, err
 	}
 
 	return result, nil
@@ -88,18 +83,25 @@ func (ps *ProjectService) DeleteAssignProject(employeeID uuid.UUID, projectID uu
 	return ps.repo.UnassignEmployee(projectID, employeeID)
 }
 
-func (ps *ProjectService) CreateTask(name string, createdBy uuid.UUID) error {
-	name = strings.TrimSpace(name)
-	if name == "" {
-		return fmt.Errorf("task name cannot be empty")
+func (ps *ProjectService) CreateTask(in cli.AddTask) (uuid.UUID, error) {
+	in.Name = strings.TrimSpace(in.Name)
+	if in.Name == "" {
+		return uuid.UUID{}, fmt.Errorf("task name cannot be empty")
 	}
-	if createdBy == uuid.Nil {
-		return fmt.Errorf("createdBy user ID cannot be nil")
+	if in.CreatedBy == uuid.Nil {
+		return uuid.UUID{}, fmt.Errorf("createdBy user ID cannot be nil")
 	}
-	return ps.repo.CreateTask(name, createdBy)
+
+	taskId, err := ps.repo.CreateTask(in)
+
+	if err != nil {
+		return uuid.UUID{}, fmt.Errorf("")
+	}
+
+	return taskId, nil
 }
 
-func (ps *ProjectService) GetAllTasks() ([]cli.Tasks, error) {
+func (ps *ProjectService) GetAllTasks() ([]cli.TaskDTO, error) {
 	return ps.repo.GetAllTasks()
 }
 

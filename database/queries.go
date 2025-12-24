@@ -8,7 +8,7 @@ var createBranch string = `INSERT INTO branches(name,created_by) VALUES($1,$2)`
 
 var createEmployee string = `
 	INSERT INTO employees(email, full_name, code, dob, phone, gender, created_by) 
-	VALUES %s `
+	VALUES %s ON CONFLICT (email) DO NOTHING RETURNING id`
 
 var getIdEmployee string = `SELECT id from employees WHERE email = $1`
 
@@ -16,11 +16,11 @@ var getEmployeeBy string = `SELECT email, full_name, code, gender, phone, dob FR
 
 var deleteEmployee string = `DELETE FROM employees WHERE email = $1`
 
-var createProject string = `INSERT INTO projects(name, notes, working_time, created_by) VALUES($1, $2, $3, $4)`
+var createProject string = `INSERT INTO projects(name, created_by) VALUES($1, $2)`
 
-var getAllProjects string = `SELECT * FROM projects`
+var getAllProjects string = `SELECT name FROM projects`
 
-var getProjectById string = `SELECT * FROM projects WHERE id = $1`
+var getProjectIdByName string = `SELECT id FROM projects WHERE name = $1`
 
 var deleteProject string = `DELETE FROM projects WHERE id =  $1`
 
@@ -33,9 +33,9 @@ var getAssignProject string = `
 
 var deleteAssignProject string = `DELETE FROM employees_projects WHERE project_id = $1 AND employee_id = $2`
 
-var createTasks string = `INSERT INTO tasks(name, created_by) VALUES($1, $2)`
+var createTasks string = `INSERT INTO tasks(name, notes, working_time, created_by) VALUES($1, $2, $3, $4) RETURNING id`
 
-var getAllTasks string = `SELECT * FROM tasks`
+var getAllTasks string = `SELECT name, notes, working_time FROM tasks`
 
 var deleteTasks string = `DELETE FROM tasks WHERE id = $1`
 
@@ -50,11 +50,24 @@ var getTaskToProject string = `
 var deleteTaskToProject string = `DELETE FROM projects_tasks WHERE employee_id = $1 AND project_id = $2`
 
 var sumWorkingTime string = `
-	SELECT e.full_name ,sum(p.working_time), ld.amount FROM employees_projects ep 
+	SELECT e.full_name ,sum(t.working_time) AS sum_working_time, ld.amount as default_salary, $1::int AS MONTH 
+	FROM employees_projects ep 
 	INNER JOIN projects p ON p.Id = ep.project_id 
+	INNER JOIN projects_tasks pt ON pt.project_id = p.Id
+	INNER JOIN tasks t ON t.Id = pt.task_id
 	INNER JOIN employees e ON e.Id = ep.employee_id 
 	INNER JOIN employees_roles er ON e.Id = er.employee_id
 	INNER JOIN levels l ON l.Id = er.level_id
 	INNER JOIN level_defaults ld ON ld.level_id = l.Id
-	WHERE EXTRACT(MONTH FROM p.created_time) = $1
+	WHERE EXTRACT(MONTH FROM p.created_time) = $1::int AND e.email IN (%s)
 	GROUP BY ld.amount, e.full_name;`
+
+var getLevelInfo string = `SELECT id, name FROM levels`
+var getPositionInfo string = `SELECT id, name FROM positions`
+var getBranchesInfo string = `SELECT id, name FROM branches`
+
+var addLevelsInfo string = `INSERT INTO levels (name, created_by) VALUES($1,$2)`
+var addPositionsInfo string = `INSERT INTO positions (name, created_by) VALUES($1,$2)`
+var addBranchesInfo string = `INSERT INTO branches (name, created_by) VALUES($1,$2)`
+
+var assignEmployeRole string = `INSERT INTO employees_roles(employee_id, level_id, position_id, branch_id, created_by) VALUES($1, $2, $3, $4, $5)`

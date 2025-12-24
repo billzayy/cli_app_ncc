@@ -54,8 +54,8 @@ func viewAllAssignmentsFlow(projSvc *services.ProjectService) {
 
 	columns := []table.Column{
 		{Title: "Employee", Width: 20},
-		{Title: "Project", Width: 20},
-		{Title: "Roles", Width: 30},
+		{Title: "Project", Width: 15},
+		{Title: "Roles", Width: 10},
 	}
 
 	rows := make([]table.Row, len(assignments))
@@ -68,12 +68,14 @@ func viewAllAssignmentsFlow(projSvc *services.ProjectService) {
 }
 
 func removeMemberFlow(eSvc *services.EmployeeService, projSvc *services.ProjectService) error {
-	eId, pId := showTableEP(eSvc, projSvc)
+	eId := selectEmployee(eSvc)
 
 	empID, err := uuid.Parse(strings.TrimSpace(eId))
 	if err != nil {
 		return fmt.Errorf("invalid employee ID: %w", err)
 	}
+
+	pId := selectProject(projSvc)
 	projID, err := uuid.Parse(strings.TrimSpace(pId))
 	if err != nil {
 		return fmt.Errorf("invalid project ID: %w", err)
