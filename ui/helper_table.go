@@ -45,7 +45,6 @@ func selectEmployee(s *services.EmployeeService) string {
 
 func selectProject(p *services.ProjectService) string {
 	columns := []table.Column{
-		{Title: "ID", Width: 36},
 		{Title: "Name", Width: 20},
 		{Title: "Notes", Width: 20},
 		{Title: "Working Time", Width: 12},
@@ -62,8 +61,15 @@ func selectProject(p *services.ProjectService) string {
 	}
 
 	rows := projectsToTableRows(projects)
-	selectedID := components.Table(columns, rows)
-	return selectedID
+	selectedName := components.Table(columns, rows)
+
+	projectId, err := p.GetIdByName(selectedName)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return projectId.String()
 }
 
 func selectTask(p *services.ProjectService) string {
@@ -139,11 +145,10 @@ func employeesToTableRows(emps []cli.EmployeeDTO) []table.Row {
 	return rows
 }
 
-func projectsToTableRows(projs []cli.Projects) []table.Row {
+func projectsToTableRows(projs []cli.ProjectDTO) []table.Row {
 	rows := make([]table.Row, len(projs))
 	for i, p := range projs {
 		rows[i] = table.Row{
-			p.Id.String(),
 			p.Name,
 			p.Notes,
 			strconv.Itoa(p.WorkingTime),

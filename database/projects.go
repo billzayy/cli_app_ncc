@@ -11,8 +11,8 @@ import (
 
 type ProjectRepository interface {
 	Create(in cli.AddProject) error
-	GetAll() ([]cli.Projects, error)
-	GetByID(id uuid.UUID) (cli.Projects, error)
+	GetAll() ([]cli.ProjectDTO, error)
+	GetIdByName(name string) (uuid.UUID, error)
 	Delete(id uuid.UUID) error
 
 	AssignEmployee(in cli.EmployeeProject) error
@@ -57,20 +57,19 @@ func (r *projectRepo) Create(in cli.AddProject) error {
 	return nil
 }
 
-func (pr *projectRepo) GetAll() ([]cli.Projects, error) {
+func (pr *projectRepo) GetAll() ([]cli.ProjectDTO, error) {
 	rows, err := pr.db.Query(getAllProjects)
 
 	if err != nil {
-		return []cli.Projects{}, err
+		return []cli.ProjectDTO{}, err
 	}
 	defer rows.Close()
 
-	var result []cli.Projects
-	var temp cli.Projects
+	var result []cli.ProjectDTO
 	for rows.Next() {
+		var temp cli.ProjectDTO
 		err := rows.Scan(
-			&temp.Id, &temp.Name, &temp.Notes, &temp.WorkingTime,
-			&temp.CreatedTime, &temp.CreatedBy)
+			&temp.Name, &temp.Notes, &temp.WorkingTime)
 
 		if err != nil {
 			return result, err
@@ -83,22 +82,25 @@ func (pr *projectRepo) GetAll() ([]cli.Projects, error) {
 	return result, nil
 }
 
-func (pr *projectRepo) GetByID(id uuid.UUID) (cli.Projects, error) {
-	rows, err := pr.db.Query(getProjectById, id)
+func (pr *projectRepo) GetIdByName(name string) (uuid.UUID, error) {
+	rows, err := pr.db.Query(getProjectIdByName, name)
 
 	if err != nil {
-		return cli.Projects{}, err
+		return uuid.UUID{}, err
 	}
 	defer rows.Close()
 
-	var result cli.Projects
+	var result uuid.UUID
 
 	for rows.Next() {
-		err := rows.Scan(&result.Id, &result.Name, &result.Notes, &result.WorkingTime, &result.CreatedTime, &result.CreatedBy)
+		var temp string
+		err := rows.Scan(&temp)
 
 		if err != nil {
-			return cli.Projects{}, err
+			return uuid.UUID{}, err
 		}
+
+		result = uuid.MustParse(temp)
 	}
 
 	log.Printf("[SQL RESULT] %+v", result)
@@ -160,7 +162,7 @@ func (pr *projectRepo) GetAssignedEmployees() ([]cli.GetEmployeesProject, error)
 	var temp cli.GetEmployeesProject
 
 	for rows.Next() {
-		err := rows.Scan(&temp.EmployeeId, &temp.ProjectId, &temp.EmployeeName, &temp.Project, &temp.Role)
+		err := rows.Scan(&temp.EmployeeId, &temp.ProjectId, &temp.EmployeeName, &temp.Project, &temp.Role, &temp.WorkingTime)
 
 		if err != nil {
 			return result, err

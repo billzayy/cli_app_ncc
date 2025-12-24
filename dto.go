@@ -29,12 +29,19 @@ type EmployeeDTO struct {
 	Dob      time.Time `json:"dob" db:"dob"`
 }
 
+type ProjectDTO struct {
+	Name        string
+	Notes       string
+	WorkingTime int
+}
+
 type GetEmployeesProject struct {
 	EmployeeId   uuid.UUID
 	ProjectId    uuid.UUID
 	EmployeeName string
 	Project      string
 	Role         string
+	WorkingTime  int
 }
 
 type GetTaskProject struct {

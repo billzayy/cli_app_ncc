@@ -27,23 +27,18 @@ func (ps *ProjectService) Create(in cli.AddProject) error {
 	return ps.repo.Create(in)
 }
 
-func (ps *ProjectService) GetAll() ([]cli.Projects, error) {
+func (ps *ProjectService) GetAll() ([]cli.ProjectDTO, error) {
 	return ps.repo.GetAll()
 }
 
-func (ps *ProjectService) GetById(id uuid.UUID) (cli.Projects, error) {
-	if id == uuid.Nil {
-		return cli.Projects{}, fmt.Errorf("project ID cannot be nil")
+func (ps *ProjectService) GetIdByName(name string) (uuid.UUID, error) {
+	if strings.TrimSpace(name) == "" {
+		return uuid.UUID{}, fmt.Errorf("name is empty")
 	}
-
-	result, err := ps.repo.GetByID(id)
+	result, err := ps.repo.GetIdByName(name)
 
 	if err != nil {
-		return cli.Projects{}, err
-	}
-
-	if result.Id == uuid.Nil {
-		return cli.Projects{}, fmt.Errorf("project not found with ID: %s", id)
+		return result, err
 	}
 
 	return result, nil

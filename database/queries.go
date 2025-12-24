@@ -18,16 +18,16 @@ var deleteEmployee string = `DELETE FROM employees WHERE email = $1`
 
 var createProject string = `INSERT INTO projects(name, notes, working_time, created_by) VALUES($1, $2, $3, $4)`
 
-var getAllProjects string = `SELECT * FROM projects`
+var getAllProjects string = `SELECT name, notes, working_time FROM projects`
 
-var getProjectById string = `SELECT * FROM projects WHERE id = $1`
+var getProjectIdByName string = `SELECT id FROM projects WHERE name = $1`
 
 var deleteProject string = `DELETE FROM projects WHERE id =  $1`
 
 var assignProject string = `INSERT INTO employees_projects(project_id, employee_id, roles, created_by) VALUES($1,$2,$3,$4)`
 
 var getAssignProject string = `
-	SELECT ep.employee_id, ep.project_id, e.full_name, p.Name, ep.Roles FROM employees e 
+	SELECT ep.employee_id, ep.project_id, e.full_name, p.Name, ep.Roles, p.Working_Time FROM employees e 
 	INNER JOIN employees_projects ep ON ep.employee_id = e.Id 
 	INNER JOIN projects p ON ep.project_id = p.Id `
 

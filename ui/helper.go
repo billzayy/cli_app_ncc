@@ -1,9 +1,12 @@
 package ui
 
 import (
+	"cli-app/components"
 	"cli-app/services"
 	"fmt"
 	"strings"
+
+	"github.com/charmbracelet/bubbles/table"
 )
 
 func readInt(prompt string, max int) int {
@@ -54,4 +57,73 @@ func validateEmail(email string) (string, error) {
 	}
 
 	return email, nil
+}
+
+func showTableE(s *services.EmployeeService) string {
+	var employeeId string
+	employeeTableColumn := []table.Column{
+		{Title: "Email", Width: 20},
+		{Title: "FullName", Width: 12},
+		{Title: "Code", Width: 10},
+		{Title: "Gender", Width: 12},
+		{Title: "Phone", Width: 11},
+		{Title: "Dob", Width: 10},
+	}
+
+	outputE, err := s.GetAllEmployees()
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if len(outputE) > 0 {
+		employeeRows := employeesToTableRows(outputE)
+
+		employeeName := components.Table(employeeTableColumn, employeeRows)
+
+		outId, err := s.GetEmployeeId(employeeName)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		employeeId = outId.String()
+	}
+
+	return employeeId
+}
+
+func showTableP(p *services.ProjectService) string {
+	var projectId string
+
+	projectTableColumn := []table.Column{
+		{Title: "Name", Width: 15},
+		{Title: "Notes", Width: 15},
+		{Title: "Working Time", Width: 12},
+	}
+
+	outputP, err := p.GetAll()
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	if len(outputP) > 0 {
+		projectRows := projectsToTableRows(outputP)
+		projecName := components.Table(projectTableColumn, projectRows)
+
+		id, err := p.GetIdByName(projecName)
+
+		if err != nil {
+			fmt.Println(err)
+		}
+
+		projectId = id.String()
+	}
+
+	return projectId
+}
+
+func showTableEP(s *services.EmployeeService, p *services.ProjectService) (string, string) {
+	return showTableE(s), showTableP(p)
 }

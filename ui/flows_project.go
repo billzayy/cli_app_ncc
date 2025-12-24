@@ -1,83 +1,153 @@
 package ui
 
 import (
+	"fmt"
+	"strconv"
+
 	cli "cli-app"
 	"cli-app/components"
 	"cli-app/services"
-	"fmt"
-	"strings"
 
-	"github.com/charmbracelet/bubbles/table"
 	"github.com/google/uuid"
 )
 
-func assignMemberFlow(empSvc *services.EmployeeService, projSvc *services.ProjectService, createdBy uuid.UUID) error {
-	employeeID := selectEmployee(empSvc)
-	if employeeID == "" {
-		return fmt.Errorf("no employee selected")
+func projectsFlow(projSvc *services.ProjectService, createdBy uuid.UUID) {
+	options := []string{
+		"Create Project",
+		"Get All Projects",
+		"Delete Project",
+		"Count working time per month",
+		"Back to Main Menu",
 	}
 
-	projectID := selectProject(projSvc)
-	if projectID == "" {
-		return fmt.Errorf("no project selected")
-	}
+	for {
+		fmt.Println("\n=== Project Management ===")
+		for i, opt := range options {
+			fmt.Printf("%d. %s\n", i+1, opt)
+		}
 
-	var roles string
-	fmt.Print("Enter roles (comma-separated, e.g., Developer, Tester): ")
-	fmt.Scanln(&roles)
-	roles = strings.TrimSpace(roles)
-	if roles == "" {
-		return fmt.Errorf("roles cannot be empty")
-	}
+		choice := readInt("Choose an option (1-4): ", len(options))
+		if choice == 0 {
+			fmt.Println("Invalid choice. Please try again.")
+			continue
+		}
 
-	assignment := cli.EmployeeProject{
-		EmployeeId: uuid.MustParse(employeeID),
-		ProjectId:  uuid.MustParse(projectID),
-		Roles:      roles,
-		CreatedBy:  createdBy,
+		switch choice {
+		case 1:
+			if err := handleCreateProject(projSvc, createdBy); err != nil {
+				fmt.Printf("Failed to create project: %v\n", err)
+			} else {
+				fmt.Println("Project created successfully!")
+			}
+		case 2:
+			handleListProjects(projSvc)
+		case 3:
+			handleDeleteProject(projSvc)
+		case 4:
+		case 5:
+			fmt.Println("Returning to main menu...")
+			return
+		default:
+			fmt.Println("Invalid option selected.")
+		}
 	}
-
-	return projSvc.AssignMember(assignment)
 }
 
-func viewAllAssignmentsFlow(projSvc *services.ProjectService) {
-	assignments, err := projSvc.GetAssignProject()
+func handleCreateProject(projSvc *services.ProjectService, createdBy uuid.UUID) error {
+	titles := []string{"Name", "Notes", "Working Time (hours)"}
+	input := components.TextInput[cli.InputAddProject](titles)
+
+	project, err := convertToAddProject(input, createdBy)
 	if err != nil {
-		fmt.Printf("Error fetching assignments: %v\n", err)
+		return fmt.Errorf("invalid input: %w", err)
+	}
+
+	if err := validateAddProject(project); err != nil {
+		return err
+	}
+
+	return projSvc.Create(project)
+}
+
+func convertToAddProject(in cli.InputAddProject, createdBy uuid.UUID) (cli.AddProject, error) {
+	workingTime, err := strconv.Atoi(in.WorkingTime)
+	if err != nil {
+		return cli.AddProject{}, fmt.Errorf("working time must be a valid number: %w", err)
+	}
+
+	if workingTime < 0 {
+		return cli.AddProject{}, fmt.Errorf("working time cannot be negative")
+	}
+
+	return cli.AddProject{
+		Name:        in.Name,
+		Notes:       in.Notes,
+		WorkingTime: workingTime,
+		CreatedBy:   createdBy,
+	}, nil
+}
+
+func validateAddProject(p cli.AddProject) error {
+	if p.Name == "" {
+		return fmt.Errorf("project name is required")
+	}
+	return nil
+}
+
+func handleListProjects(projSvc *services.ProjectService) {
+	projects, err := projSvc.GetAll()
+	if err != nil {
+		fmt.Printf("Error fetching projects: %v\n", err)
 		return
 	}
 
-	if len(assignments) == 0 {
-		fmt.Println("No project assignments found.")
+	if len(projects) == 0 {
+		fmt.Println("No projects found.")
 		return
 	}
 
-	columns := []table.Column{
-		{Title: "Employee", Width: 20},
-		{Title: "Project", Width: 20},
-		{Title: "Roles", Width: 30},
+	fmt.Println("\n=== Your Projects ===")
+	for _, p := range projects {
+		fmt.Printf("- %s (Working Time: %d hours)\n  Notes: %s\n \n\n",
+			p.Name, p.WorkingTime, p.Notes)
 	}
-
-	rows := make([]table.Row, len(assignments))
-	for i, a := range assignments {
-		rows[i] = table.Row{a.EmployeeName, a.Project, a.Role}
-	}
-
-	fmt.Println("\nCurrent Project Assignments:")
-	components.Table(columns, rows)
 }
 
-func removeMemberFlow(eSvc *services.EmployeeService, projSvc *services.ProjectService) error {
-	eId, pId := showTableEP(eSvc, projSvc)
-
-	empID, err := uuid.Parse(strings.TrimSpace(eId))
-	if err != nil {
-		return fmt.Errorf("invalid employee ID: %w", err)
-	}
-	projID, err := uuid.Parse(strings.TrimSpace(pId))
-	if err != nil {
-		return fmt.Errorf("invalid project ID: %w", err)
-	}
-
-	return projSvc.DeleteAssignProject(empID, projID)
+// handleDeleteProject lets user delete a project by ID or name
+func handleDeleteProject(projSvc *services.ProjectService) {
+	// projects, err := projSvc.GetAll()
+	// if err != nil {
+	// 	fmt.Printf("Error loading projects: %v\n", err)
+	// 	return
+	// }
+	//
+	// if len(projects) == 0 {
+	// 	fmt.Println("No projects to delete.")
+	// 	return
+	// }
+	//
+	// fmt.Println("\n=== Delete Project ===")
+	// for i, p := range projects {
+	// 	fmt.Printf("%d. %s\n", i+1, p.Name)
+	// }
+	//
+	// choice := readInt("Select project to delete (1-"+fmt.Sprint(len(projects))+"), or 0 to cancel: ", 0, len(projects))
+	// if choice == 0 {
+	// 	fmt.Println("Delete cancelled.")
+	// 	return
+	// }
+	//
+	// projectToDelete := projects[choice-1]
+	//
+	// confirm := components.ReadString(fmt.Sprintf("Type 'DELETE' to confirm deletion of '%s': ", projectToDelete.Name))
+	// if confirm != "DELETE" {
+	// 	fmt.Println("Deletion cancelled.")
+	// 	return
+	// }
+	//
+	// if err := projSvc.Delete(projectToDelete.Id); err != nil {
+	// 	fmt.Printf("Failed to delete project: %v\n", err)
+	// } else {
+	// 	fmt.Println("Project deleted successfully.")
+	// }
 }

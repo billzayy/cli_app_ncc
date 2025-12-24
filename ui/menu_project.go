@@ -9,38 +9,30 @@ import (
 
 func MenuProject(empSvc *services.EmployeeService, projSvc *services.ProjectService, currentUserID *uuid.UUID) {
 	options := []string{
-		"Assign Member to Project",
-		"View All Assignments",
-		"Remove Member from Project",
+		"Projects",
+		"Tasks",
+		"Assign Member Project",
 		"Back to Main Menu",
 	}
 
 	for {
-		fmt.Println("\n=== Project Member Management ===")
+		fmt.Println("\n=== Project Menu ===")
 		for i, opt := range options {
 			fmt.Printf("%d. %s\n", i+1, opt)
 		}
 
-		choice := readInt("Choose an option (1-%d): ", len(options))
+		choice := readInt("Choose an option (1-4): ", len(options))
 		if choice == 0 {
 			continue
 		}
 
 		switch choice {
 		case 1:
-			if err := assignMemberFlow(empSvc, projSvc, *currentUserID); err != nil {
-				fmt.Printf("Failed to assign member: %v\n", err)
-			} else {
-				fmt.Println("✓ Member assigned successfully!")
-			}
+			projectsFlow(projSvc, *currentUserID)
 		case 2:
-			viewAllAssignmentsFlow(projSvc)
+			fmt.Println("Tasks Management - Still working on it...")
 		case 3:
-			if err := removeMemberFlow(empSvc, projSvc); err != nil {
-				fmt.Printf("Failed to remove member: %v\n", err)
-			} else {
-				fmt.Println("✓ Member removed successfully!")
-			}
+			MenuMember(empSvc, projSvc, currentUserID)
 		case 4:
 			fmt.Println("Returning to main menu...")
 			return
