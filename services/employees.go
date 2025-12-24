@@ -148,6 +148,7 @@ func (es *EmployeeService) ImportEmployee(filePath string, importedBy uuid.UUID)
 
 		listInput = append(listInput, in)
 	}
+
 	_, _, err = es.repo.Create(listInput)
 
 	if err != nil {
@@ -155,5 +156,4 @@ func (es *EmployeeService) ImportEmployee(filePath string, importedBy uuid.UUID)
 	}
 
 	return nil
-
 }

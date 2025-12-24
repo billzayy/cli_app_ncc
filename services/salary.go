@@ -16,8 +16,8 @@ func NewSalaryService(sr database.SalaryRepository) *SalaryService {
 	}
 }
 
-func (ss *SalaryService) CalculateMonthSalary(month int) ([]cli.TimeAndAmount, error) {
-	rawData, err := ss.CalculateMonthSalary(month)
+func (ss *SalaryService) CalculateMonthSalary(month int, nameList []string) ([]cli.TimeAndAmount, error) {
+	rawData, err := ss.repo.GetTimeAndAmount(month, nameList)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch working time data: %w", err)

@@ -31,7 +31,7 @@ func InitEmployeeRepo(db *sql.DB) EmployeeRepository {
 func (er *employeeRepo) Create(input []cli.AddEmployee) (uuid.UUID, bool, error) {
 	var result uuid.UUID
 	values := []string{}
-	args := []interface{}{}
+	args := []any{}
 	argPos := 1
 
 	for _, e := range input {

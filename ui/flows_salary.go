@@ -1,6 +1,7 @@
 package ui
 
 import (
+	cli "cli-app"
 	"cli-app/services"
 	"fmt"
 	"strconv"
@@ -16,15 +17,84 @@ func getValidMonth() (int, error) {
 	}
 }
 
-func calculateSalaryFlow(s *services.SalaryService) error {
+func salaryMonthFlow(e *services.EmployeeService, s *services.SalaryService) {
+	options := []string{
+		"Calculate salary per employee",
+		"Calculate salary for all employees",
+		"Back to Main menu",
+	}
+
+	for {
+		fmt.Println("\n=== Salary Per Month ===")
+		for i, opt := range options {
+			fmt.Printf("%d. %s\n", i+1, opt)
+		}
+
+		choice := readInt("Choose an option (1-3): ", len(options))
+		if choice == 0 {
+			continue
+		}
+
+		switch choice {
+		case 1:
+			err := calculateSalaryPerMonthFlow(e, s, "one")
+			if err != nil {
+				fmt.Println(err)
+			}
+		case 2:
+			err := calculateSalaryPerMonthFlow(e, s, "all")
+			if err != nil {
+				fmt.Println(err)
+			}
+		case 3:
+			return
+		default:
+			fmt.Println("Please choose option correctly !")
+			continue
+		}
+	}
+}
+
+func calculateSalaryPerMonthFlow(e *services.EmployeeService, s *services.SalaryService, many string) error {
+	var results []cli.TimeAndAmount
+
 	month, err := getValidMonth()
 	if err != nil {
 		return err
 	}
 
-	results, err := s.CalculateMonthSalary(month)
-	if err != nil {
-		return err
+	switch many {
+	case "one":
+		email := selectEmailEmployee(e)
+
+		person, err := s.CalculateMonthSalary(month, []string{email})
+		if err != nil {
+			return err
+		}
+
+		results = person
+	case "all":
+		var mailList []string
+		list, err := e.GetAllEmployees()
+
+		if err != nil {
+			return fmt.Errorf("")
+		}
+
+		for _, v := range list {
+			mailList = append(mailList, v.Email)
+		}
+
+		person, err := s.CalculateMonthSalary(month, mailList)
+		if err != nil {
+			return err
+		}
+
+		results = person
+	case "":
+		return fmt.Errorf("missing many type")
+	default:
+		return fmt.Errorf("Only accept one or all type")
 	}
 
 	if len(results) == 0 {
@@ -32,12 +102,14 @@ func calculateSalaryFlow(s *services.SalaryService) error {
 		return nil
 	}
 
+	fmt.Println(results)
+
 	fmt.Printf("\nSalary Calculation for Month %d\n\n", month)
-	fmt.Printf("%-30s %-15s %-15s\n", "Employee", "Working Hours", "Amount (VND)")
+	fmt.Printf("%-30s %-15s %-15s\n", "Employee", "Working Hours", "Amount (VND), Month")
 	fmt.Println("-----------------------------------------------------------------")
 
 	for _, r := range results {
-		fmt.Printf("%-30s %-15d %-15d\n", r.Name, r.WorkingTime, r.Amount)
+		fmt.Printf("%-30s %-15d %-15d %-12d\n", r.Name, r.WorkingTime, r.Amount, r.Month)
 	}
 	fmt.Println("-----------------------------------------------------------------")
 
@@ -50,7 +122,7 @@ func exportSalaryFlow(s *services.SalaryService) error {
 		return err
 	}
 
-	results, err := s.CalculateMonthSalary(month)
+	results, err := s.CalculateMonthSalary(month, []string{})
 	if err != nil {
 		return err
 	}

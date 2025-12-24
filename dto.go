@@ -57,6 +57,7 @@ type TimeAndAmount struct {
 	Name        string
 	WorkingTime int
 	Amount      int
+	Month       int
 }
 
 type GetRoleInfo struct {

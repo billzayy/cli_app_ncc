@@ -140,5 +140,5 @@ func (a *App) ShowProjectMenu(employeeID uuid.UUID) {
 }
 
 func (a *App) ShowSalaryMenu(employeeID uuid.UUID) {
-	MenuSalary(a.salSvc, &employeeID)
+	MenuSalary(a.empSvc, a.salSvc, &employeeID)
 }

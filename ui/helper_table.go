@@ -171,3 +171,27 @@ func employeeRoleToTableRows(role []cli.GetRoleInfo) []table.Row {
 
 	return rows
 }
+
+func selectEmailEmployee(s *services.EmployeeService) string {
+	columns := []table.Column{
+		{Title: "Email", Width: 25},
+		{Title: "Full Name", Width: 20},
+		{Title: "Code", Width: 10},
+		{Title: "Gender", Width: 10},
+		{Title: "Phone", Width: 11},
+		{Title: "Dob", Width: 20},
+	}
+
+	emps, err := s.GetAllEmployees()
+	if err != nil {
+		fmt.Printf("Error loading employees: %v\n", err)
+		return ""
+	}
+	if len(emps) == 0 {
+		fmt.Println("No employees found.")
+		return ""
+	}
+
+	rows := employeesToTableRows(emps)
+	return components.Table(columns, rows)
+}
