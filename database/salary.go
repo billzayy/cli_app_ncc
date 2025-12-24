@@ -50,6 +50,7 @@ func (sr *salaryRepo) GetTimeAndAmount(month int, nameList []string) ([]cli.Time
 		if err := rows.Scan(&item.Name, &item.WorkingTime, &item.Amount, &item.Month); err != nil {
 			return nil, fmt.Errorf("scan failed: %w", err)
 		}
+		item.BaseAmount = item.Amount
 		result = append(result, item)
 	}
 
