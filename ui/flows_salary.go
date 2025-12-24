@@ -102,16 +102,14 @@ func calculateSalaryPerMonthFlow(e *services.EmployeeService, s *services.Salary
 		return nil
 	}
 
-	fmt.Println(results)
-
 	fmt.Printf("\nSalary Calculation for Month %d\n\n", month)
-	fmt.Printf("%-30s %-15s %-15s\n", "Employee", "Working Hours", "Amount (VND), Month")
-	fmt.Println("-----------------------------------------------------------------")
+	fmt.Printf("%-30s %-15s %-15s %-15s %-15s\n", "Employee", "Working Hours", "Base Amount", "Amount (VND)", "Month")
+	fmt.Println("-------------------------------------------------------------------------------------")
 
 	for _, r := range results {
-		fmt.Printf("%-30s %-15d %-15d %-12d\n", r.Name, r.WorkingTime, r.Amount, r.Month)
+		fmt.Printf("%-30s %-15d %-15d %-15d %-12d\n", r.Name, r.WorkingTime, r.BaseAmount, r.Amount, r.Month)
 	}
-	fmt.Println("-----------------------------------------------------------------")
+	fmt.Println("-------------------------------------------------------------------------------------")
 
 	return nil
 }

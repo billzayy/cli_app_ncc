@@ -28,7 +28,7 @@ func (ss *SalaryService) CalculateMonthSalary(month int, nameList []string) ([]c
 	}
 
 	result := make([]cli.TimeAndAmount, len(rawData))
-	const standardHour = 172
+	const standardHour = 41
 
 	for i, v := range rawData {
 		if v.WorkingTime < standardHour {
@@ -38,11 +38,12 @@ func (ss *SalaryService) CalculateMonthSalary(month int, nameList []string) ([]c
 				Name:        v.Name,
 				WorkingTime: v.WorkingTime,
 				Amount:      calculated,
+				BaseAmount:  v.BaseAmount,
+				Month:       v.Month,
 			}
-			return result, nil
+		} else {
+			result[i] = rawData[i]
 		}
-
-		result[i] = rawData[i]
 	}
 
 	return result, nil

@@ -56,6 +56,7 @@ type GetTaskProject struct {
 type TimeAndAmount struct {
 	Name        string
 	WorkingTime int
+	BaseAmount  int
 	Amount      int
 	Month       int
 }
